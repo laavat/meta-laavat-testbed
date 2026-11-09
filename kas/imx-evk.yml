@@ -1,0 +1,48 @@
+# The NXP i.MX8MM EVK tier: the same SoC as kas/imx.yml, a BSP this repo did not write.
+#
+# This exists to test integration, not to add coverage. Every signing mechanism here is one
+# the Variscite tier already exercises; what is new is that the BSP is NXP's own, so the
+# recipe names, the boot-image layout and the variables naming them are not the ones
+# sample-variscite-imx8mm was built around. If the layer is genuinely integrable, the only cost
+# of this tier is a glue layer and this file.
+#
+# No meta-variscite-*: that is the point. It also means no cst_signer and no `hab` override,
+# so nothing signs the boot image with a dev key here - the service is the only signer.
+header:
+  version: 14
+  includes:
+    - kas/core.yml
+
+machine: imx8mmevk
+target: core-image-minimal
+
+repos:
+  meta-freescale:
+    url: https://github.com/Freescale/meta-freescale
+    branch: scarthgap
+    commit: 0627128b341cfb2bef7a0832ce8cac0ce1127f13
+    path: layers-50/meta-freescale
+
+  meta-freescale-distro:
+    url: https://github.com/Freescale/meta-freescale-distro
+    branch: scarthgap
+    commit: b9d6a5d9931922558046d230c1f5f4ef6ee72345
+    path: layers-50/meta-freescale-distro
+
+  meta-imx:
+    url: https://github.com/nxp-imx/meta-imx
+    branch: scarthgap-6.6.52-2.2.0
+    commit: 219f6d04a4c339eb6f2dc626f944bbdf9a716ff5
+    path: layers-50/meta-imx
+    layers:
+      meta-imx-bsp:
+
+  # The glue for this tier, kept separate from sample-variscite-imx8mm so neither can quietly
+  # lean on the other. Written from meta-laavat/docs/INTEGRATION.md.
+  sample-nxp-imx8mm:
+    path: sample-nxp-imx8mm
+
+local_conf_header:
+  evk: |
+    # meta-freescale's imx-boot needs this; the Variscite tier gets it from core.yml too.
+    ACCEPT_FSL_EULA = "1"

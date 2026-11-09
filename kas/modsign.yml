@@ -1,0 +1,10 @@
+# Kernel module signing with the kernel's own build-time ephemeral key (CONFIG_MODULE_SIG_ALL).
+# The kernel fragment lives in sample-variscite-imx8mm and is gated on the 'modsign' distro feature.
+header:
+  version: 14
+  includes:
+    - kas/base.yml
+
+local_conf_header:
+  modsign: |
+    DISTRO_FEATURES:append = " modsign"

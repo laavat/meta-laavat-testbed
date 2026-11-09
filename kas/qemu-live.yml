@@ -1,0 +1,98 @@
+# The QEMU tier signed by a real LAAVAT service. Standalone rather than reusing
+# kas/laavat/*.yml, because those all pull kas/base.yml and with it the whole i.MX BSP.
+#
+# The kas container must be able to reach LAAVAT_API_URL. If it needs extra container
+# arguments for that, pass them through: make qemu-build KAS_RUNTIME_ARGS="--network=host"
+header:
+  version: 14
+  includes:
+    - kas/qemu.yml
+
+repos:
+  meta-laavat:
+    path: layers-50/meta-laavat
+
+# Set here, not inherited: kas resolves scalar keys last-include-wins.
+machine: qemuarm64-secureboot
+target:
+  - core-image-minimal
+  - sample-qemu-arm64-bundle
+
+local_conf_header:
+  laavat: |
+  laavat-optee: |
+    LAAVAT_OPTEE_SIGN = "1"
+    # The in-image assertions. This image is its own positive/negative pair: optee-os's
+    # built-in TAs are service-signed, optee-test's are not, so the core should load the
+    # first and refuse the second.
+    # optee-os carries the service-signed TAs into the rootfs. Without it /lib/optee_armtz
+    # holds only optee-test's own dev-key-signed TAs, and nothing service-signed is ever
+    # loaded at runtime - measured, not assumed.
+    # optee-os-ta - NOT optee-os - is the package carrying the signed TAs into
+    # /usr/lib/optee_armtz. Without it that directory holds only optee-test's own
+    # dev-key-signed TAs and nothing service-signed is ever loaded. Measured, not assumed.
+    IMAGE_INSTALL:append = " laavat-boot-check optee-os-ta"
+    # TAs are packed from, signed back into and installed out of these workdirs.
+    RM_WORK_EXCLUDE += "optee-os optee-test"
+  laavat-rauc: |
+    DISTRO_FEATURES:append = " rauc"
+    IMAGE_INSTALL:append:pn-core-image-minimal = " rauc"
+    RAUC_IMAGE_FSTYPE ?= "ext4"
+    LAAVAT_RAUC_SIGN = "1"
+  laavat-fit: |
+    # The kernel as a signed FIT. poky signs it locally at assembly with a throwaway key;
+    # SignKernel then runs mkimage -F service-side and REPLACES those signature nodes, so the
+    # booted kernel carries the service's signature and nothing else. The key-name-hint is
+    # just a name - what matters is which key the control DTB holds.
+    KERNEL_CLASSES:append = " kernel-fitimage"
+    KERNEL_IMAGETYPE:qemuarm64-secureboot = "fitImage"
+    UBOOT_SIGN_ENABLE = "1"
+    UBOOT_SIGN_KEYDIR = "${TOPDIR}/keys/fit"
+    UBOOT_SIGN_KEYNAME = "laavat"
+    FIT_GENERATE_KEYS = "1"
+    FIT_SIGN_ALG = "rsa2048"
+    FIT_HASH_ALG = "sha256"
+    FIT_SIGN_INDIVIDUAL = "0"
+    UBOOT_MKIMAGE_DTCOPTS = "-I dts -O dtb -p 2000"
+    LAAVAT_FIT_SIGN = "1"
+    LAAVAT_FIT_BOOT = "1"
+    # This machine sets OF_BOARD: U-Boot takes its control device tree from QEMU and builds
+    # no u-boot.dtb of its own, so there is nothing here to inject the key into. The boot
+    # harness keys the tree QEMU passes instead - boot-verify.py --fit-key-dir.
+    LAAVAT_FIT_REQUIRE_CONTROL_DTB = "0"
+    # QEMU virt RAM starts at 0x40000000; without these poky derives an address below RAM.
+    UBOOT_LOADADDRESS = "0x40480000"
+    UBOOT_ENTRYPOINT = "0x40480000"
+    RM_WORK_EXCLUDE += "linux-yocto"
+  # Sorts after every "laavat*" key so the service wiring lands last.
+  live: |
+    LAAVAT_API_URL = "https://signing.example.com/api/v1"
+    # Token *paths*, never tokens: 0600, owned by the build user.
+    LAAVAT_TOKEN_FILE = "/build/laavat/token-writer.jwt"
+    LAAVAT_APPROVER_TOKEN_FILE = "/build/laavat/token-approver.jwt"
+    # The client reads the CA from the task environment, so it must be exported.
+    export REQUESTS_CA_BUNDLE = "/build/laavat/combined_ca.crt"
+
+    # OP-TEESigning: the operation signs the TAs, and its public key becomes the
+    # TEE core's trust anchor. The pin is the SHA-256 of the key's DER
+    # SubjectPublicKeyInfo - a rotated key fails the fetch instead of being embedded.
+    LAAVAT_PRODUCT_ID:pn-optee-os = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-optee-os = "<operation-uuid>"
+    LAAVAT_PUBKEY_SHA256:pn-optee-os = "<sha256-of-the-public-key-DER>"
+    # RaucBundleSigningWithOneTimeKey re-signs the finished .raucb. The signer is an
+    # ephemeral certificate the service mints per bundle, so the device has to trust the
+    # issuing CA rather than any one key.
+    LAAVAT_PRODUCT_ID:pn-sample-qemu-arm64-bundle = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-sample-qemu-arm64-bundle = "<operation-uuid>"
+
+    # The pre-flight: 64KiB of noise through the whole do_laavat_sign chain, ~1 min.
+    #   bitbake laavat-sign-smoke -c laavat_sign
+    LAAVAT_PRODUCT_ID:pn-laavat-sign-smoke = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-laavat-sign-smoke = "<operation-uuid>"
+
+    # SignKernel on the assembled fitImage. Its public key is what the control DTB carries,
+    # so the kernel U-Boot boots is verified against the service and nothing else.
+    LAAVAT_PRODUCT_ID:pn-linux-yocto = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-linux-yocto = "<operation-uuid>"
+    # The key that ends up in U-Boot's control DTB; a different operation, so a different pin.
+    LAAVAT_FIT_PUBKEY_SHA256 = "<sha256-of-the-public-key-DER>"

@@ -1,0 +1,77 @@
+# The Xilinx ZynqMP tier signed by a real LAAVAT service: FIT + RAUC + bootgen.
+#
+# No HAB, because the SoC has none - the first-stage boot image is bootgen's, and the
+# service signs it with SignBootgenImage. No OP-TEE, because meta-xilinx scarthgap ships
+# it for Versal only. If everything else works here unchanged, the three
+# remaining classes are genuinely generic rather than i.MX code with the i.MX filed off.
+header:
+  version: 14
+  includes:
+    - kas/xilinx-zynqmp.yml
+
+repos:
+  meta-laavat:
+    path: layers-50/meta-laavat
+
+machine: zynqmp-generic
+target:
+  - core-image-minimal
+  - sample-xilinx-zynqmp-bundle
+
+local_conf_header:
+  xilinx-features: |
+    # FIT: laavat-fitkey checks both of these at parse time (INTEGRATION.md section 6).
+    KERNEL_CLASSES:append = " kernel-fitimage"
+    KERNEL_IMAGETYPE = "fitImage"
+    UBOOT_SIGN_ENABLE = "1"
+    UBOOT_SIGN_KEYDIR = "${TOPDIR}/keys/fit-zynqmp"
+    UBOOT_SIGN_KEYNAME = "laavat"
+    FIT_GENERATE_KEYS = "1"
+    FIT_SIGN_ALG = "rsa2048"
+    FIT_HASH_ALG = "sha256"
+    FIT_SIGN_INDIVIDUAL = "0"
+    UBOOT_MKIMAGE_DTCOPTS = "-I dts -O dtb -p 2000"
+
+    # RAUC
+    DISTRO_FEATURES:append = " rauc"
+    IMAGE_INSTALL:append:pn-core-image-minimal = " rauc"
+    RAUC_IMAGE_FSTYPE ?= "ext4"
+
+    # No OP-TEE on this tier. meta-xilinx scarthgap enables it for the Versal 2VE/2VM
+    # family only (optee-os-amd.inc sets COMPATIBLE_MACHINE for that alone), so on
+    # zynqmp-generic optee-os is skipped and MACHINE_FEATURES cannot change that.
+    # laavat-optee loses nothing by it: the QEMU tier already builds meta-arm's
+    # optee-os_4.1.0 and `make qemu-ta-tamper` proves TA signing against it.
+
+    # xilinx-bootbin packs from and unpacks into ${B}, so rm_work must not clear it.
+    RM_WORK_EXCLUDE += "linux-xlnx u-boot-xlnx xilinx-bootbin"
+
+  # Sorts after every "xilinx*" key so the service wiring lands last.
+  laavat-live: |
+    LAAVAT_FIT_SIGN = "1"
+    LAAVAT_RAUC_SIGN = "1"
+    LAAVAT_BOOTGEN_SIGN = "1"
+    # Deliberately off: see the OP-TEE note above.
+    LAAVAT_OPTEE_SIGN = "0"
+
+    # --- service (EXAMPLE values: replace with your own service) ---
+    LAAVAT_API_URL = "https://signing.example.com/api/v1"
+    LAAVAT_TOKEN_FILE = "/build/laavat/token-writer.jwt"
+    LAAVAT_APPROVER_TOKEN_FILE = "/build/laavat/token-approver.jwt"
+    export REQUESTS_CA_BUNDLE = "/build/laavat/combined_ca.crt"
+
+    # --- one product + operation per recipe (EXAMPLE: your own ids) ---
+    # bootgen: an archive operation, so its download encoding is raw like OP-TEE's.
+    LAAVAT_PRODUCT_ID:pn-xilinx-bootbin = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-xilinx-bootbin = "<operation-uuid>"
+
+    LAAVAT_PRODUCT_ID:pn-linux-xlnx = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-linux-xlnx = "<operation-uuid>"
+    LAAVAT_FIT_PUBKEY_SHA256 = "<sha256-of-the-public-key-DER>"
+
+    LAAVAT_PRODUCT_ID:pn-sample-xilinx-zynqmp-bundle = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-sample-xilinx-zynqmp-bundle = "<operation-uuid>"
+
+    LAAVAT_PRODUCT_ID:pn-optee-os = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-optee-os = "<operation-uuid>"
+    LAAVAT_PUBKEY_SHA256:pn-optee-os = "<sha256-of-the-public-key-DER>"

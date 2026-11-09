@@ -1,0 +1,13 @@
+[Unit]
+Description=LAAVAT runtime verification checks
+After=multi-user.target tee-supplicant.service
+Wants=tee-supplicant.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/laavat-boot-check.sh
+StandardOutput=journal+console
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,19 @@
+# The i.MX6 tier's offline subset: everything that does not talk to the service.
+#
+#     ./kas-container shell kas/imx6-offline.yml -c 'bitbake u-boot-imx -c laavat_request'
+#
+# This is the one that matters on this tier: do_laavat_pack parses a SINGLE-stage
+# u-boot.imx, which no other tier produces, and builds the request from its one IVT.
+header:
+  version: 14
+  includes:
+    - kas/imx6-live.yml
+
+local_conf_header:
+  # Sorts after "laavat-live", so it wins.
+  zz-offline: |
+    LAAVAT_FIT_SIGN = "0"
+    # laavat's FIT half off, so poky's FIT machinery is dead weight and not free: it makes
+    # u-boot depend on the kernel's assembled fitImage, dragging a full kernel build into
+    # the cheap check. u-boot-imx itself needs no kernel.
+    UBOOT_SIGN_ENABLE = "0"

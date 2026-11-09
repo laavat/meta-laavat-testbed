@@ -1,0 +1,17 @@
+# RAUC: rauc in the image (systemd service), dev CA keyring via rauc-conf, and a verity-format
+# bundle of the rootfs signed with the dev key (meta-rauc bundle.bbclass). PKCS#11 later:
+# RAUC_KEY_FILE/RAUC_CERT_FILE = "pkcs11:…" plus RAUC_PKCS11_PIN exported into do_bundle.
+header:
+  version: 14
+  includes:
+    - kas/base.yml
+
+target:
+  - core-image-minimal
+  - sample-variscite-imx8mm-bundle
+
+local_conf_header:
+  rauc: |
+    DISTRO_FEATURES:append = " rauc"
+    IMAGE_INSTALL:append:pn-core-image-minimal = " rauc"
+    RAUC_IMAGE_FSTYPE ?= "ext4"

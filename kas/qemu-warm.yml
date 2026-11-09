@@ -1,0 +1,10 @@
+# Warm the sstate for the live QEMU tier without an account, so the signed build that
+# follows only redoes the signing tasks. LAAVAT_SIGN_SKIP is expanded inside the task
+# bodies, so it is part of their signatures: dropping this file reruns every signing
+# task rather than reusing the skipped output.
+header:
+  version: 14
+
+local_conf_header:
+  zzz-warm: |
+    LAAVAT_SIGN_SKIP = "1"

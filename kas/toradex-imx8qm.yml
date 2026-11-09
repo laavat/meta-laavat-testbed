@@ -1,0 +1,74 @@
+# The Toradex Apalis iMX8 tier: i.MX8QM from a vendor that is not NXP.
+#
+# The i.MX6, i.MX93 and i.MX8QM tiers already here are all NXP reference boards, so they
+# share NXP's recipes and only vary the SoC. This one varies the vendor on a SoC already
+# covered, which is the other axis: Toradex ships its own u-boot and kernel recipes, and
+# its own BSP conventions, on the same i.MX8QM the imx8qmmek tier builds.
+#
+# Toradex does not use a plain "scarthgap" branch; theirs is scarthgap-7.x.y.
+#
+# Recipe names settled with `bitbake -e` before writing any glue.
+header:
+  version: 14
+  includes:
+    - kas/core.yml
+
+machine: apalis-imx8
+target: core-image-minimal
+
+repos:
+  meta-freescale:
+    url: https://github.com/Freescale/meta-freescale
+    branch: scarthgap
+    commit: 0627128b341cfb2bef7a0832ce8cac0ce1127f13
+    path: layers-50/meta-freescale
+
+  meta-freescale-distro:
+    url: https://github.com/Freescale/meta-freescale-distro
+    branch: scarthgap
+    commit: b9d6a5d9931922558046d230c1f5f4ef6ee72345
+    path: layers-50/meta-freescale-distro
+
+  # meta-toradex-nxp's LAYERDEPENDS names freescale-3rdparty. That dependency does not
+  # surface from a bare `bitbake -e`, which prints variables quite happily; it appears only
+  # when a recipe is asked for. Worth knowing when validating a new BSP.
+  meta-freescale-3rdparty:
+    url: https://github.com/Freescale/meta-freescale-3rdparty
+    branch: scarthgap
+    commit: ce10c065119c2d4e359235c77aae7e0d843533ef
+    path: layers-50/meta-freescale-3rdparty
+
+  # The glue for this tier.
+  sample-toradex-imx8qm:
+    path: sample-toradex-imx8qm
+
+  meta-toradex-bsp-common:
+    url: https://git.toradex.com/meta-toradex-bsp-common.git
+    branch: scarthgap-7.x.y
+    commit: 63f3b4af0ef25cb0a5125de1b519be088b049347
+    path: layers-50/meta-toradex-bsp-common
+
+  meta-toradex-nxp:
+    url: https://git.toradex.com/meta-toradex-nxp.git
+    branch: scarthgap-7.x.y
+    commit: bc45f2374f5f5db4e0875477765e3068741b1f84
+    path: layers-50/meta-toradex-nxp
+
+local_conf_header:
+  toradex: |
+    ACCEPT_FSL_EULA = "1"
+
+    # Toradex scarthgap-7.x.y is built against a newer NXP BSP than this test-bed pins for
+    # every other i.MX tier (scarthgap-6.6.52-2.2.0). imx-sm-toradex requires
+    # dynamic-layers/arm-toolchain/.../imx-system-manager.inc, a path that exists only in
+    # the newer meta-imx; ours has no dynamic-layers directory at all, so parsing halts.
+    #
+    # Masked rather than realigned: pulling a second, newer meta-imx just to satisfy
+    # recipes this machine never builds would cost a whole extra BSP checkout.
+    #
+    # The general lesson is the finding: a vendor BSP is released against one NXP BSP
+    # version, and mixing releases needs either alignment or a mask.
+    # Exactly two recipes need it, both i.MX95-era firmware (System Manager and the
+    # Optional Executable Image) that an i.MX8QM never builds.
+    BBMASK += "meta-toradex-nxp/recipes-bsp/imx-system-manager/"
+    BBMASK += "meta-toradex-nxp/recipes-bsp/imx-oei/"

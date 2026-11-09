@@ -1,0 +1,20 @@
+# LAAVAT signing of the OP-TEE trusted applications, and the service's public key as the
+# TEE core's TA trust anchor. Needs `make fetch-laavat`, a reachable service and a pinned
+# key — see README "Trusted applications, signed by the service". The section key sorts
+# before `live`, because kas emits local_conf_header sections in key order and
+# kas/laavat-live.yml's service wiring has to land last.
+header:
+  version: 14
+  includes:
+    - kas/laavat/common.yml
+    - kas/optee.yml
+
+local_conf_header:
+  laavat-optee: |
+    LAAVAT_OPTEE_SIGN = "1"
+    # No default on purpose: an unpinned fetch would embed whatever key the service
+    # currently holds. SHA-256 of the operation key's DER SubjectPublicKeyInfo.
+    LAAVAT_PUBKEY_SHA256:pn-optee-os ?= ""
+    # The TAs are packed from, signed back into and installed out of the optee-os workdir;
+    # rm_work would delete it while the compile/pack stamps still say they are done.
+    RM_WORK_EXCLUDE += "optee-os"

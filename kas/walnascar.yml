@@ -1,0 +1,131 @@
+# The same QEMU tier on the NEXT Yocto release.
+#
+# Every other tier here is scarthgap, so the release axis was entirely untested - and it is
+# the axis that actually breaks a layer. meta-laavat's classes hook poky internals that move
+# between releases: kernel-fitimage, do_uboot_assemble_fitimage, do_deploy/sstate ordering.
+# A new BSP exercises none of that; a new Yocto exercises all of it.
+#
+# meta-laavat already *declares* the compatibility - LAYERSERIES_COMPAT_laavat is
+# "scarthgap walnascar" - so until this tier existed, half that declaration was a claim
+# nothing had checked.
+#
+# Two things must be separate from every other tier, and both were learned the hard way:
+#
+#   layers-52/ rather than layers-50/, because kas checks a repo out to its path and every
+#   other tier shares layers-50/poky at scarthgap.
+#
+#   A SEPARATE BUILD DIR. `kas checkout` rewrites build/conf/bblayers.conf, so running this
+#   tier against the shared build/ left scarthgap's bitbake parsing walnascar's metadata and
+#   failing with `ImportError: cannot import name 'multiprocessing' from 'bb'` - a confusing
+#   way to say the two releases were mixed. Always:
+#
+#       KAS_BUILD_DIR=$PWD/build-52 ./kas-container shell kas/walnascar.yml -c 'bitbake -p'
+#
+#   or `make walnascar`, which sets it.
+header:
+  version: 14
+
+build_system: openembedded
+distro: poky
+machine: qemuarm64-secureboot
+
+repos:
+  poky-52:
+    url: https://github.com/yoctoproject/poky
+    branch: walnascar
+    commit: d0b46a6624ec9c61c47270745dd0b2d5abbe6ac1
+    path: layers-52/poky
+    layers:
+      meta:
+      meta-poky:
+
+  meta-openembedded-52:
+    url: https://github.com/openembedded/meta-openembedded
+    branch: walnascar
+    commit: 07330a98cf93806b7a4e0170a541b94962ff3960
+    path: layers-52/meta-openembedded
+    layers:
+      meta-oe:
+      meta-python:
+      meta-networking:
+      meta-multimedia:
+
+  meta-arm-52:
+    url: https://git.yoctoproject.org/meta-arm
+    branch: walnascar
+    commit: b68089f2648d712b9406d0e88c71758913267f81
+    path: layers-52/meta-arm
+    layers:
+      meta-arm:
+      meta-arm-toolchain:
+
+  meta-rauc-52:
+    url: https://github.com/rauc/meta-rauc
+    branch: walnascar
+    commit: a0b83842d131093e89fa4fefaaa1997f05afdf62
+    path: layers-52/meta-rauc
+
+  meta-security-52:
+    url: https://git.yoctoproject.org/meta-security
+    branch: walnascar
+    commit: 1f7eeb8e84811fa79b98f236ade42dc52d44cfc6
+    path: layers-52/meta-security
+    layers:
+      .:
+      meta-integrity:
+
+  meta-laavat:
+    path: layers-50/meta-laavat
+
+  sample-qemu-arm64:
+    path: sample-qemu-arm64
+
+  testbed-fixtures:
+    path: testbed-fixtures
+
+target:
+  - core-image-minimal
+  - sample-qemu-arm64-bundle
+
+local_conf_header:
+  yocto52: |
+    IMAGE_INSTALL:append = " optee-test optee-client"
+    RM_WORK_EXCLUDE += "optee-os optee-test linux-yocto u-boot"
+    DISTRO_FEATURES:append = " rauc"
+    IMAGE_INSTALL:append:pn-core-image-minimal = " rauc"
+    RAUC_IMAGE_FSTYPE ?= "ext4"
+
+    # FIT, so laavat-fitkey has something to hook.
+    KERNEL_CLASSES:append = " kernel-fitimage"
+    KERNEL_IMAGETYPE = "fitImage"
+    UBOOT_SIGN_ENABLE = "1"
+    UBOOT_SIGN_KEYDIR = "${TOPDIR}/keys/fit-wn"
+    UBOOT_SIGN_KEYNAME = "laavat"
+    FIT_GENERATE_KEYS = "1"
+    FIT_SIGN_ALG = "rsa2048"
+    FIT_HASH_ALG = "sha256"
+    FIT_SIGN_INDIVIDUAL = "0"
+    UBOOT_MKIMAGE_DTCOPTS = "-I dts -O dtb -p 2000"
+
+  # Without these the guards are all off and the tier proves only that the layer parses,
+  # not that a single class still wires on the new release. Found the hard way: the first
+  # walnascar run reported zero laavat tasks on every recipe and looked like a pass.
+  zz-laavat: |
+    LAAVAT_FIT_SIGN = "1"
+    LAAVAT_RAUC_SIGN = "1"
+    LAAVAT_OPTEE_SIGN = "1"
+
+    LAAVAT_API_URL = "https://signing.example.com/api/v1"
+    LAAVAT_TOKEN_FILE = "/build/laavat/token-writer.jwt"
+    LAAVAT_APPROVER_TOKEN_FILE = "/build/laavat/token-approver.jwt"
+
+    LAAVAT_PRODUCT_ID:pn-linux-yocto = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-linux-yocto = "<operation-uuid>"
+    LAAVAT_FIT_PUBKEY_SHA256 = "<sha256-of-the-public-key-DER>"
+
+    LAAVAT_PRODUCT_ID:pn-sample-qemu-arm64-bundle = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-sample-qemu-arm64-bundle = "<operation-uuid>"
+
+    LAAVAT_PRODUCT_ID:pn-optee-os = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-optee-os = "<operation-uuid>"
+    LAAVAT_PUBKEY_SHA256:pn-optee-os = "<sha256-of-the-public-key-DER>"

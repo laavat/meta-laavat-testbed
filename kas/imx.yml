@@ -1,0 +1,50 @@
+# The i.MX/Variscite half: everything that makes this an imx8mm-var-dart build.
+# meta-variscite-hab is not optional decoration - it is the HAB signing path.
+header:
+  version: 14
+
+machine: imx8mm-var-dart
+
+repos:
+  # The glue for this tier.
+  sample-variscite-imx8mm:
+    path: sample-variscite-imx8mm
+
+  meta-freescale:
+    url: https://github.com/Freescale/meta-freescale
+    branch: scarthgap
+    commit: 0627128b341cfb2bef7a0832ce8cac0ce1127f13
+    path: layers-50/meta-freescale
+
+  meta-freescale-distro:
+    url: https://github.com/Freescale/meta-freescale-distro
+    branch: scarthgap
+    commit: b9d6a5d9931922558046d230c1f5f4ef6ee72345
+    path: layers-50/meta-freescale-distro
+
+  meta-imx:
+    url: https://github.com/nxp-imx/meta-imx
+    branch: scarthgap-6.6.52-2.2.0
+    commit: 219f6d04a4c339eb6f2dc626f944bbdf9a716ff5
+    path: layers-50/meta-imx
+    layers:
+      meta-imx-bsp:
+
+  meta-variscite-bsp-common:
+    url: https://github.com/varigit/meta-variscite-bsp-common
+    branch: scarthgap_6.6.52-2.2.0_var01
+    commit: ebb1e3e6f6d6f6294675016a33a4d51580194516
+    path: layers-50/meta-variscite-bsp-common
+
+  meta-variscite-bsp-imx:
+    url: https://github.com/varigit/meta-variscite-bsp-imx
+    branch: scarthgap_6.6.52-2.2.0_var01
+    commit: b3d42725a55f98a8f27392d225ef20b1a1b802e0
+    path: layers-50/meta-variscite-bsp-imx
+
+  meta-variscite-hab:
+    url: https://github.com/varigit/meta-variscite-hab
+    branch: scarthgap_6.6.52-2.2.0_var01
+    commit: 949557e79104bfc99f15d9787a9ca853bf939128
+    path: layers-50/meta-variscite-hab
+

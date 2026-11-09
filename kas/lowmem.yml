@@ -1,0 +1,21 @@
+# For memory-constrained or ballooning VMs (e.g. Hyper-V dynamic memory), where MemTotal can
+# move by several GiB while the build runs - kas/core.yml's numbers assume ~20 GiB.
+#
+# So the parallelism is sized for the LOW end, and BB_PRESSURE_MAX_MEMORY does the rest:
+# bitbake compares the *rate of change* of /proc/pressure/memory's "some" total (microseconds
+# of stall per second), so 15000 = throttle new tasks once the guest spends >1.5% of a second
+# stalled on memory. That reacts to the balloon deflating under us, which a fixed thread count
+# cannot. None of these three reach a task hash (PARALLEL_MAKE is in BB_HASHEXCLUDE_COMMON;
+# the other two are bitbake config no recipe references), so changing them costs no sstate.
+#
+# Join it onto any tier - kas merges colon-separated configs:
+#   ./kas-container build kas/qemu-live.yml:kas/lowmem.yml
+header:
+  version: 14
+
+local_conf_header:
+  # Sorts after every other key, so it wins over kas/core.yml's numbers.
+  zzz-lowmem: |
+    BB_NUMBER_THREADS = "4"
+    PARALLEL_MAKE = "-j 6"
+    BB_PRESSURE_MAX_MEMORY = "15000"

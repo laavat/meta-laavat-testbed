@@ -1,0 +1,73 @@
+# The Phytec phyBOARD-Polis tier signed by a real LAAVAT service: FIT + RAUC + OP-TEE + HAB.
+#
+# Standalone for the same reason kas/evk-live.yml is: the kas/fit.yml, kas/rauc.yml and
+# kas/optee.yml fragments all pull kas/base.yml and with it the Variscite BSP.
+#
+# Every recipe name below was settled with `bitbake -e` - see kas/imx-phytec.yml.
+header:
+  version: 14
+  includes:
+    - kas/imx-phytec.yml
+
+repos:
+  meta-laavat:
+    path: layers-50/meta-laavat
+
+machine: phyboard-polis-imx8mm-5
+target:
+  - core-image-minimal
+  - sample-phytec-imx8mm-bundle
+
+local_conf_header:
+  phytec-features: |
+    # FIT: laavat-fitkey checks both of these at parse time (INTEGRATION.md section 6).
+    # The machine conf sets KERNEL_IMAGETYPE = "Image"; local.conf outranks it.
+    KERNEL_CLASSES:append = " kernel-fitimage"
+    KERNEL_IMAGETYPE = "fitImage"
+    UBOOT_SIGN_ENABLE = "1"
+    UBOOT_SIGN_KEYDIR = "${TOPDIR}/keys/fit-phytec"
+    UBOOT_SIGN_KEYNAME = "laavat"
+    FIT_GENERATE_KEYS = "1"
+    FIT_SIGN_ALG = "rsa2048"
+    FIT_HASH_ALG = "sha256"
+    FIT_SIGN_INDIVIDUAL = "0"
+    UBOOT_MKIMAGE_DTCOPTS = "-I dts -O dtb -p 2000"
+
+    # RAUC
+    DISTRO_FEATURES:append = " rauc"
+    IMAGE_INSTALL:append:pn-core-image-minimal = " rauc"
+    RAUC_IMAGE_FSTYPE ?= "ext4"
+
+    # OP-TEE: no line needed. Unlike the EVK, this machine already carries optee in
+    # MACHINE_FEATURES, so INTEGRATION.md section 8a's one line is a no-op here.
+
+    # Same rm_work exclusions as the other tiers, under this BSP's recipe names.
+    RM_WORK_EXCLUDE += "linux-phytec-imx u-boot-phytec-imx optee-os"
+
+  # Sorts after every "phytec*" key so the service wiring lands last.
+  laavat-live: |
+    LAAVAT_FIT_SIGN = "1"
+    LAAVAT_RAUC_SIGN = "1"
+    LAAVAT_OPTEE_SIGN = "1"
+    LAAVAT_HAB_ARCHIVE = "1"
+
+    # --- service (EXAMPLE values: replace with your own service) ---
+    LAAVAT_API_URL = "https://signing.example.com/api/v1"
+    LAAVAT_TOKEN_FILE = "/build/laavat/token-writer.jwt"
+    LAAVAT_APPROVER_TOKEN_FILE = "/build/laavat/token-approver.jwt"
+    export REQUESTS_CA_BUNDLE = "/build/laavat/combined_ca.crt"
+
+    # --- one product + operation per recipe (EXAMPLE: your own ids, same service as the other tiers) ---
+    LAAVAT_PRODUCT_ID:pn-imx-boot-phytec = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-imx-boot-phytec = "<operation-uuid>"
+
+    LAAVAT_PRODUCT_ID:pn-linux-phytec-imx = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-linux-phytec-imx = "<operation-uuid>"
+    LAAVAT_FIT_PUBKEY_SHA256 = "<sha256-of-the-public-key-DER>"
+
+    LAAVAT_PRODUCT_ID:pn-sample-phytec-imx8mm-bundle = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-sample-phytec-imx8mm-bundle = "<operation-uuid>"
+
+    LAAVAT_PRODUCT_ID:pn-optee-os = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-optee-os = "<operation-uuid>"
+    LAAVAT_PUBKEY_SHA256:pn-optee-os = "<sha256-of-the-public-key-DER>"

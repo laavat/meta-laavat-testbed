@@ -1,0 +1,86 @@
+# An AHAB tier signed by a real LAAVAT service: FIT + RAUC + OP-TEE + AHAB (SignSPSDK).
+#
+# Standalone rather than reusing kas/fit.yml, kas/rauc.yml and kas/optee.yml, because those
+# all pull kas/base.yml and with it the Variscite BSP. Same reason kas/qemu-live.yml is
+# standalone. Nothing in the feature blocks below is EVK-specific - they are the upstream
+# prerequisites each meta-laavat class documents needing.
+#
+# Reaching the service from inside the kas container is the caller's job - see README
+# "Signing against a real service".
+header:
+  version: 14
+  includes:
+    - kas/toradex-imx8qm.yml
+
+repos:
+  meta-laavat:
+    path: layers-50/meta-laavat
+
+machine: apalis-imx8
+target:
+  - core-image-minimal
+  - sample-toradex-imx8qm-bundle
+
+local_conf_header:
+  # --- upstream prerequisites the classes require, by name ---
+  evk-features: |
+    # FIT: laavat-fitkey checks both of these at parse time (INTEGRATION.md section 6).
+    KERNEL_CLASSES:append = " kernel-fitimage"
+    KERNEL_IMAGETYPE = "fitImage"
+    UBOOT_SIGN_ENABLE = "1"
+    UBOOT_SIGN_KEYDIR = "${TOPDIR}/keys/fit-apalis"
+    UBOOT_SIGN_KEYNAME = "laavat"
+    FIT_GENERATE_KEYS = "1"
+    FIT_SIGN_ALG = "rsa2048"
+    FIT_HASH_ALG = "sha256"
+    FIT_SIGN_INDIVIDUAL = "0"
+    UBOOT_MKIMAGE_DTCOPTS = "-I dts -O dtb -p 2000"
+
+    # RAUC
+    DISTRO_FEATURES:append = " rauc"
+    IMAGE_INSTALL:append:pn-core-image-minimal = " rauc"
+    RAUC_IMAGE_FSTYPE ?= "ext4"
+
+    # OP-TEE: one line, per INTEGRATION.md section 8a.
+    MACHINE_FEATURES:append = " optee"
+
+    # The signed fitImage is read from and written into the kernel workdir, and the u-boot
+    # recipe injects the key into its own build tree; rm_work would delete both while the
+    # stamps still say those tasks are done. optee-os packs and unpacks TAs in ${B}.
+    RM_WORK_EXCLUDE += "linux-toradex u-boot-toradex optee-os"
+
+  # Sorts after every "evk*" key so the service wiring lands last.
+  laavat-live: |
+    LAAVAT_FIT_SIGN = "1"
+    LAAVAT_RAUC_SIGN = "1"
+    LAAVAT_OPTEE_SIGN = "1"
+    # AHAB, not HABv4: this SoC's boot ROM is a different scheme with different tooling.
+    LAAVAT_AHAB_SIGN = "1"
+
+    # --- service (EXAMPLE values: replace with your own service) ---
+    LAAVAT_API_URL = "https://signing.example.com/api/v1"
+    # Token *paths*, never tokens: 0600, owned by the build user.
+    LAAVAT_TOKEN_FILE = "/build/laavat/token-writer.jwt"
+    LAAVAT_APPROVER_TOKEN_FILE = "/build/laavat/token-approver.jwt"
+    export REQUESTS_CA_BUNDLE = "/build/laavat/combined_ca.crt"
+
+    # --- one product + operation per recipe (EXAMPLE: your own ids, from `product getall`) ---
+    # SignSPSDK, not SignHAB: a different operation on the service, so a different id.
+    LAAVAT_PRODUCT_ID:pn-imx-boot = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-imx-boot = "<operation-uuid>"
+
+    LAAVAT_PRODUCT_ID:pn-linux-toradex = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-linux-toradex = "<operation-uuid>"
+    # Not per-recipe: the u-boot recipe cannot see a :pn-linux-toradex override, and both
+    # halves of the FIT anchor read it.
+    LAAVAT_FIT_PUBKEY_SHA256 = "<sha256-of-the-public-key-DER>"
+
+    LAAVAT_PRODUCT_ID:pn-sample-toradex-imx8qm-bundle = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-sample-toradex-imx8qm-bundle = "<operation-uuid>"
+
+    LAAVAT_PRODUCT_ID:pn-optee-os = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-optee-os = "<operation-uuid>"
+    LAAVAT_PUBKEY_SHA256:pn-optee-os = "<sha256-of-the-public-key-DER>"
+
+    # raw for FIT, RAUC and OP-TEE. laavat-ahab sets base64 for its own task,
+    # which is per-operation and must not be overridden globally here.

@@ -1,0 +1,79 @@
+# Sign every wired target against a real LAAVAT service, in one build config.
+# The demo's V2: kas/all.yml's feature set signed by the service instead of by dev keys,
+# plus OP-TEE, which kas/all.yml leaves out. `make delta` diffs it against kas/all.yml.
+# Copy this file and replace: the API URL, the two token paths, and the five
+# product/operation id pairs (plus the TA key pin). Nothing else here is
+# site-specific.
+# Reaching the service from inside the kas container is the caller's job — see
+# README "Signing against a real service".
+header:
+  version: 14
+  includes:
+    - kas/all.yml
+    - kas/laavat/common.yml
+    - kas/laavat/hab.yml
+    - kas/laavat/fit.yml
+    - kas/laavat/rauc.yml
+    - kas/laavat/optee.yml
+
+# Set here, not inherited: kas lets the last-processed include win, and kas/laavat/optee.yml
+# re-includes kas/base.yml's scalar target after kas/rauc.yml's list — which would drop
+# sample-variscite-imx8mm-bundle and leave LAAVAT_RAUC_SIGN with nothing to sign. `make delta` shows it.
+target:
+  - core-image-minimal
+  - sample-variscite-imx8mm-bundle
+
+local_conf_header:
+  # Named to sort after every "laavat*" key: kas emits local_conf_header sections
+  # in key order, and this one has to land after kas/laavat/common.yml's stub defaults.
+  live: |
+    # --- service (EXAMPLE values: replace with your own service) ---
+    LAAVAT_API_URL = "https://signing.example.com/api/v1"
+    # Token *paths*, never tokens: 0600, owned by the build user. /build is the kas build dir.
+    LAAVAT_TOKEN_FILE = "/build/laavat/token-writer.jwt"
+    # Self-approval — this example's default. Use a token for a different principal
+    # than the requester. Unset to keep approval separate (production setups typically do).
+    LAAVAT_APPROVER_TOKEN_FILE = "/build/laavat/token-approver.jwt"
+    # Private CA. The client reads it from the task environment, so it must be exported.
+    export REQUESTS_CA_BUNDLE = "/build/laavat/combined_ca.crt"
+
+    # --- one product + operation per recipe (EXAMPLE: your own ids) ---
+    # SignUBoot on 64KiB of noise: the cheapest end-to-end call there is.
+    LAAVAT_PRODUCT_ID:pn-laavat-sign-smoke = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-laavat-sign-smoke = "<operation-uuid>"
+
+    # SignHAB, hab-archive-v1 (kas/laavat/hab.yml); encoding comes from request.json.
+    LAAVAT_PRODUCT_ID:pn-imx-boot = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-imx-boot = "<operation-uuid>"
+
+    # SignKernel on the assembled fitImage (kas/laavat/fit.yml).
+    LAAVAT_PRODUCT_ID:pn-linux-variscite = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-linux-variscite = "<operation-uuid>"
+    # The key that ends up in U-Boot's control DTB. Deliberately not per-recipe: the u-boot
+    # recipe cannot see a :pn-linux-variscite override, so both halves read this one.
+    LAAVAT_FIT_PUBKEY_SHA256 = "<sha256-of-the-public-key-DER>"
+
+    # RaucBundleSigningWithOneTimeKey on the finished .raucb (kas/laavat/rauc.yml).
+    LAAVAT_PRODUCT_ID:pn-sample-variscite-imx8mm-bundle = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-sample-variscite-imx8mm-bundle = "<operation-uuid>"
+
+    # OP-TEESigning on the trusted applications, and the same operation's public key as
+    # the TEE core's TA trust anchor. The pin is the SHA-256 of this key's DER
+    # SubjectPublicKeyInfo, which
+    # `product getpubkey` prints — a rotated key then fails the fetch.
+    LAAVAT_PRODUCT_ID:pn-optee-os = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-optee-os = "<operation-uuid>"
+    LAAVAT_PUBKEY_SHA256:pn-optee-os = "<sha256-of-the-public-key-DER>"
+
+    # Download encoding is per operation, not per payload shape: see the table in
+    # the meta-laavat README. All five here store raw; SignHAB file mode is base64.
+
+  # Sorts after "verity", so it wins: the FIT the service signs has to be the FIT that boots.
+  # kas/verity.yml bundles the initramfs into the kernel, and poky then assembles a second
+  # image (fitImage-bundle), signs it with laavat-fitkey's placeholder key and deploys THAT,
+  # while the service-signed fitImage-none reaches nothing. laavat-fitkey refuses the
+  # combination rather than ship it. Unbundled, the initramfs becomes a ramdisk node inside
+  # the FIT, so the dm-verity root hash is still covered by the service's signature.
+  # NOT yet proven by a build: this tier needs the Variscite BSP and live credentials.
+  zz-fit-not-bundled: |
+    INITRAMFS_IMAGE_BUNDLE = "0"

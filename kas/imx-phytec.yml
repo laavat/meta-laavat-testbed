@@ -1,0 +1,80 @@
+# The Phytec phyBOARD-Polis i.MX8MM tier: a third BSP, and the first from a vendor with no
+# relationship to the two already here.
+#
+# Why this one rather than another i.MX8M board. It is the same SoC and the same tune, so it
+# shares the aarch64 work dirs and costs about what the EVK tier did - but almost nothing
+# else is shared:
+#
+#   boot recipe   imx-boot-phytec (under dynamic-layers/fsl-bsp-release), not imx-boot
+#   kernel        linux-phytec or linux-imx, depending on the BSP variant selected
+#   optee-os      from meta-arm, not meta-imx - the first test of LAAVAT_TA_GLOB's default
+#   HAB           meta-phytec has its OWN CST signing (imx-boot-phytec-secureboot.inc), a
+#                 third arrangement after Variscite's cst_signer and the EVK's none
+#
+# Phytec ships two BSP variants (use-nxp-bsp / use-mainline-bsp) and the machine conf carries
+# KERNEL_DEVICETREE and UBOOT_CONFIG for both. `bitbake -e` settled it, and reading the layer
+# would have got three of four names wrong:
+#
+#   IMX_DEFAULT_BSP "nxp", so MACHINEOVERRIDES carries use-nxp-bsp
+#   virtual/kernel      linux-phytec-imx      (not linux-phytec, not linux-imx)
+#   virtual/bootloader  u-boot-phytec-imx     (not u-boot-imx)
+#   optee-os            meta-imx's 4.4.0.imx  (meta-arm's 4.4.0 is the mainline-bsp path)
+#   UUU_BOOTLOADER      unset - the EVK's deploy-name source does not exist here
+#
+# and the pair that matters most for HAB stay multi-valued on this machine:
+#
+#   UBOOT_CONFIG "fspi sd"   IMXBOOT_TARGETS "flash_evk flash_evk_flexspi"
+#
+# do_compile loops over their product, so this board builds FOUR boot images.
+header:
+  version: 14
+  includes:
+    - kas/core.yml
+
+machine: phyboard-polis-imx8mm-5
+target: core-image-minimal
+
+repos:
+  meta-freescale:
+    url: https://github.com/Freescale/meta-freescale
+    branch: scarthgap
+    commit: 0627128b341cfb2bef7a0832ce8cac0ce1127f13
+    path: layers-50/meta-freescale
+
+  meta-freescale-distro:
+    url: https://github.com/Freescale/meta-freescale-distro
+    branch: scarthgap
+    commit: b9d6a5d9931922558046d230c1f5f4ef6ee72345
+    path: layers-50/meta-freescale-distro
+
+  meta-imx:
+    url: https://github.com/nxp-imx/meta-imx
+    branch: scarthgap-6.6.52-2.2.0
+    commit: 219f6d04a4c339eb6f2dc626f944bbdf9a716ff5
+    path: layers-50/meta-imx
+    layers:
+      meta-imx-bsp:
+
+  meta-phytec:
+    url: https://github.com/phytec/meta-phytec
+    branch: scarthgap
+    commit: 14e0b7bffaabeec24c91c8ebe48fe455d3474fd2
+    path: layers-50/meta-phytec
+
+  # The glue for this tier, written from meta-laavat/docs/INTEGRATION.md.
+  sample-phytec-imx8mm:
+    path: sample-phytec-imx8mm
+
+local_conf_header:
+  phytec: |
+    ACCEPT_FSL_EULA = "1"
+
+    # meta-phytec assumes its own setup script. imx-boot-phytec_1.0.bb:10 reaches into
+    # meta-imx for a patch with
+    #
+    #     FILESEXTRAPATHS:prepend := "${OEROOT}/../meta-imx/.../files:"
+    #
+    # and OEROOT is defined only by Phytec's bblayers.conf.sample and their own kas files,
+    # so under any other harness it expands to nothing and the recipe cannot find a patch
+    # that is sitting right there. COREBASE is poky, which is what OEROOT means here.
+    OEROOT = "${COREBASE}"

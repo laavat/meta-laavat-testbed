@@ -1,0 +1,13 @@
+# The i.MX tier: the machine-neutral core plus the i.MX/Variscite BSP.
+# Split so kas/qemu.yml can take kas/core.yml alone.
+header:
+  version: 14
+  includes:
+    - kas/core.yml
+    - kas/imx.yml
+
+# Set here, not inherited: kas resolves scalar keys last-include-wins, and a composed config
+# that lets base.yml's scalars be re-included after a list has already silently dropped a
+# build target once.
+machine: imx8mm-var-dart
+target: core-image-minimal

@@ -1,0 +1,13 @@
+# HAB signing of imx-boot through the LAAVAT service (hab-archive-v1), alongside the
+# CST dev-key path from hab.yml: both sign the same unsigned flash.bin, so the block
+# addresses the request carries can be diffed against what cst_signer produced.
+# Needs `make fetch-laavat` and a reachable service — see README "Hermetic HAB smoke".
+header:
+  version: 14
+  includes:
+    - kas/laavat/common.yml
+    - kas/hab.yml
+
+local_conf_header:
+  laavat-hab: |
+    LAAVAT_HAB_ARCHIVE = "1"

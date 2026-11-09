@@ -1,0 +1,14 @@
+# OP-TEE for imx8mm-var-dart: the machine conf already carries TEE_LOAD_ADDR /
+# TEE_CFG_DDR_SIZE and Variscite's optee-os bbappend already uses them, so this only flips the
+# feature. tee.bin then becomes ATF's BL32 inside the same imx-boot container kas/hab.yml
+# signs whole — no change to the HAB path. Recipe: meta-imx-bsp optee-os_4.4.0.imx.bb (its
+# imx-base-extend.inc re-pins PREFERRED_VERSION over meta-freescale's 4.2.0.imx) — same
+# lf-6.6.52_2.2.0 release train as the rest of the BSP pin.
+header:
+  version: 14
+  includes:
+    - kas/base.yml
+
+local_conf_header:
+  optee: |
+    MACHINE_FEATURES:append = " optee"

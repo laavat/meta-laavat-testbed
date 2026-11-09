@@ -1,0 +1,20 @@
+# The kernel FIT signed by the service, and the service's key in U-Boot's control device
+# tree - so the device verifies the kernel against the service and nothing else.
+# Needs `make fetch-laavat` and a reachable service — see README "FIT image".
+header:
+  version: 14
+  includes:
+    - kas/laavat/common.yml
+    - kas/fit.yml
+
+local_conf_header:
+  laavat-fit: |
+    LAAVAT_FIT_SIGN = "1"
+    # kas/fit.yml names poky's throwaway key "dev". The key in this directory is the
+    # service's certificate beside a placeholder private key, so name it for what it is:
+    # laavat-fitkey derives the certificate CN from this too.
+    UBOOT_SIGN_KEYNAME = "laavat"
+    # The signed fitImage is read from, and written into, the kernel workdir, and the
+    # u-boot recipe injects the key into its own build tree; rm_work would delete both
+    # while the assemble/sign stamps still say those tasks are done.
+    RM_WORK_EXCLUDE += "linux-variscite u-boot-variscite"

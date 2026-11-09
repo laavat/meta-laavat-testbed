@@ -1,0 +1,146 @@
+# Yocto 5.3 (whinlatter), and the first tier that is not built from poky.
+#
+# The poky repository's master branch was retired: its README now says so and points at
+# either separate clones of bitbake + openembedded-core + meta-yocto, or the new
+# bitbake-setup tool. poky's release branches stop at walnascar (5.2). So 5.3 and the
+# April 2026 LTS are simply not poky-based, and any project whose tooling assumes
+# "clone poky" has an expiry date on it.
+#
+# That makes this tier worth more than one more release number: it is the check that
+# meta-laavat survives the layout change, not just the version bump.
+#
+#   bitbake              2.16   (oe-core whinlatter sets BB_MIN_VERSION = "2.15.2")
+#   openembedded-core    provides meta, and the oe-init-build-env kas looks for
+#   meta-yocto           provides meta-poky, which is where the poky DISTRO still lives
+#
+# oe-core's scripts/oe-buildenv-internal resolves bitbake as "$OEROOT/../bitbake", so the
+# two have to be siblings under layers-53/.
+header:
+  version: 14
+
+build_system: openembedded
+distro: poky
+machine: qemuarm64-secureboot
+target:
+  - core-image-minimal
+  - sample-qemu-arm64-bundle
+
+repos:
+  # Not a layer: bitbake is the build tool, and adding it to bblayers.conf breaks parsing.
+  bitbake-53:
+    url: https://git.openembedded.org/bitbake
+    branch: "2.16"
+    commit: 713fbbdb9ecc195ceb2216a2345e0d79dbee2135
+    path: layers-53/bitbake
+    layers:
+      .: excluded
+
+  openembedded-core-53:
+    url: https://git.openembedded.org/openembedded-core
+    branch: whinlatter
+    commit: 8751ec83421192fc0f8495fb95798f9eb7be77a0
+    path: layers-53/openembedded-core
+    layers:
+      meta:
+
+  meta-yocto-53:
+    url: https://git.yoctoproject.org/meta-yocto
+    branch: whinlatter
+    commit: 3f2e6b6fadfa542f0fe3738375a2f9fcbd4c1f6e
+    path: layers-53/meta-yocto
+    layers:
+      meta-poky:
+
+  meta-openembedded-53:
+    url: https://github.com/openembedded/meta-openembedded
+    branch: whinlatter
+    commit: f52f32952cb9717949f8bc3d3ccf6c4c5a59521f
+    path: layers-53/meta-openembedded
+    layers:
+      meta-oe:
+      meta-python:
+      meta-networking:
+      meta-multimedia:
+
+  meta-arm-53:
+    url: https://git.yoctoproject.org/meta-arm
+    branch: whinlatter
+    commit: 4dc2a7bf29c1853b95dda53d9527f0a23049295f
+    path: layers-53/meta-arm
+    layers:
+      meta-arm:
+      meta-arm-toolchain:
+
+  meta-rauc-53:
+    url: https://github.com/rauc/meta-rauc
+    branch: whinlatter
+    commit: 4bc963abde09904392d3ce7524d430b7e4b808aa
+    path: layers-53/meta-rauc
+
+  meta-security-53:
+    url: https://git.yoctoproject.org/meta-security
+    branch: whinlatter
+    commit: 18c6a7b5d836cc35c5131e33449b786111eceaf5
+    path: layers-53/meta-security
+    layers:
+      .:
+      meta-integrity:
+
+  meta-laavat:
+    path: layers-50/meta-laavat
+
+  sample-qemu-arm64:
+    path: sample-qemu-arm64
+
+  # 5.3-only: the FIT bbappend names linux-yocto-fitimage, which does not exist before 5.3.
+  sample-qemu-arm64-yocto53:
+    path: sample-qemu-arm64-yocto53
+
+  testbed-fixtures:
+    path: testbed-fixtures
+
+local_conf_header:
+  yocto53: |
+    IMAGE_INSTALL:append = " optee-test optee-client"
+    RM_WORK_EXCLUDE += "optee-os optee-test linux-yocto u-boot"
+    DISTRO_FEATURES:append = " rauc"
+    IMAGE_INSTALL:append:pn-core-image-minimal = " rauc"
+    RAUC_IMAGE_FSTYPE ?= "ext4"
+
+    # 5.3 replaced kernel-fitimage.bbclass with kernel-fit-image.bbclass and moved the FIT
+    # into its own linux-yocto-fitimage recipe, so KERNEL_IMAGETYPE must NOT name fitImage
+    # (kernel.bbclass errors if it does) and the glue inherits laavat-fitimage there.
+    UBOOT_SIGN_ENABLE = "1"
+    UBOOT_SIGN_KEYDIR = "${TOPDIR}/keys/fit-wl"
+    UBOOT_SIGN_KEYNAME = "laavat"
+    FIT_GENERATE_KEYS = "1"
+    FIT_SIGN_ALG = "rsa2048"
+    FIT_HASH_ALG = "sha256"
+    FIT_SIGN_INDIVIDUAL = "0"
+    UBOOT_SIGN_KEYDIR = "${TOPDIR}/keys/fit-wl"
+    UBOOT_SIGN_KEYNAME = "laavat"
+    FIT_GENERATE_KEYS = "1"
+    FIT_SIGN_ALG = "rsa2048"
+    FIT_HASH_ALG = "sha256"
+    FIT_SIGN_INDIVIDUAL = "0"
+    UBOOT_MKIMAGE_DTCOPTS = "-I dts -O dtb -p 2000"
+
+  zz-laavat: |
+    LAAVAT_FIT_SIGN = "1"
+    LAAVAT_RAUC_SIGN = "1"
+    LAAVAT_OPTEE_SIGN = "1"
+
+    LAAVAT_API_URL = "https://signing.example.com/api/v1"
+    LAAVAT_TOKEN_FILE = "/build/laavat/token-writer.jwt"
+    LAAVAT_APPROVER_TOKEN_FILE = "/build/laavat/token-approver.jwt"
+
+    LAAVAT_PRODUCT_ID:pn-linux-yocto-fitimage = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-linux-yocto-fitimage = "<operation-uuid>"
+    LAAVAT_FIT_PUBKEY_SHA256 = "<sha256-of-the-public-key-DER>"
+
+    LAAVAT_PRODUCT_ID:pn-sample-qemu-arm64-bundle = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-sample-qemu-arm64-bundle = "<operation-uuid>"
+
+    LAAVAT_PRODUCT_ID:pn-optee-os = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-optee-os = "<operation-uuid>"
+    LAAVAT_PUBKEY_SHA256:pn-optee-os = "<sha256-of-the-public-key-DER>"

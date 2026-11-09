@@ -1,0 +1,51 @@
+# The NXP i.MX6 SABRE-SD tier: the first non-i.MX8M SoC, and the first that is not aarch64.
+#
+# This exists to stress assumptions, not to add another board. Every tier so far has signed a
+# two-stage flash.bin built by imx-boot. i.MX6 with u-boot-imx has neither:
+#
+#     SPL_BINARY:pn-u-boot-imx        = ""            no SPL at all
+#     UBOOT_MAKE_TARGET:pn-u-boot-imx = "u-boot.imx"
+#     UBOOT_SUFFIX:pn-u-boot-imx      = "imx"
+#
+# so the signable artifact is a SINGLE-stage u-boot.imx produced by the u-boot recipe. That
+# makes laavat-hab's defaults (LAAVAT_HAB_STAGES "SPL UBOOT", search dir ${S}) i.MX8M-shaped,
+# which is exactly what this tier is here to find out.
+#
+# armv7 cortexa9 shares no work dirs with the aarch64 tiers, so this is the expensive one on
+# disk. Parse first, build only if the parse leaves a question.
+header:
+  version: 14
+  includes:
+    - kas/core.yml
+
+machine: imx6qdlsabresd
+target: core-image-minimal
+
+repos:
+  meta-freescale:
+    url: https://github.com/Freescale/meta-freescale
+    branch: scarthgap
+    commit: 0627128b341cfb2bef7a0832ce8cac0ce1127f13
+    path: layers-50/meta-freescale
+
+  meta-freescale-distro:
+    url: https://github.com/Freescale/meta-freescale-distro
+    branch: scarthgap
+    commit: b9d6a5d9931922558046d230c1f5f4ef6ee72345
+    path: layers-50/meta-freescale-distro
+
+  meta-imx:
+    url: https://github.com/nxp-imx/meta-imx
+    branch: scarthgap-6.6.52-2.2.0
+    commit: 219f6d04a4c339eb6f2dc626f944bbdf9a716ff5
+    path: layers-50/meta-imx
+    layers:
+      meta-imx-bsp:
+
+  # The glue for this tier, written from meta-laavat/docs/INTEGRATION.md.
+  sample-nxp-imx6:
+    path: sample-nxp-imx6
+
+local_conf_header:
+  imx6: |
+    ACCEPT_FSL_EULA = "1"

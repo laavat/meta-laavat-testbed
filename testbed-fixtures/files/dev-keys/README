@@ -1,0 +1,18 @@
+Development-only RAUC signing key and certificate (dev.key.pem / dev.cert.pem),
+generated on first use by scripts/gen-dev-keys.sh - `make dev-keys`, which every
+build target runs. They are never committed.
+The CN says DO NOT USE IN PRODUCTION and it is self-signed; nothing on a device
+trusts it once LAAVAT_RAUC_SIGN is on, because the device keyring is the
+service's issuing CA (see ../../rauc/).
+
+`rauc bundle` refuses to run without a key, so do_bundle needs one before the
+service ever re-signs the result. That is the only reason this exists.
+
+service-ca.pem is shared from here by every tier. system.conf is shared by every
+tier whose rauc-conf bbappend prepends ${LAAVAT_DEVKEYS_DIR} first -
+sample-qemu-arm64 and sample-variscite-imx8mm keep their own system.conf.
+
+service-ca.pem is a PLACEHOLDER. Its CN says so, and the tiers that share it pin its
+digest, so their builds pass with it installed as the device's update root of trust.
+That is fine for a build-time demonstration and wrong for anything else: replace the
+file and the pin together before a device sees either.

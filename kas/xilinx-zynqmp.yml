@@ -1,0 +1,43 @@
+# The AMD/Xilinx Zynq UltraScale+ MPSoC tier: the first non-NXP SoC.
+#
+# This is the sharpest test of the class boundary in the repo. There is no HAB here at all -
+# Xilinx boot images are authenticated by bootgen with its own certificate format - so
+# laavat-hab simply does not apply. What remains is everything meta-laavat claims is
+# SoC-agnostic:
+#
+#     laavat-fitkey / laavat-fitkey-uboot   u-boot FIT verification, same as anywhere
+#     laavat-rauc / laavat-rauc-keyring     RAUC bundles, no SoC involvement at all
+#     laavat-optee                          TA signing, if the machine carries optee
+#
+# If those three need no changes here, they are genuinely generic rather than i.MX code that
+# happens to have no i.MX in it. If they need changes, that is the finding.
+#
+# Recipe names are NOT guessed: run `bitbake -e` before writing the glue. That rule was
+# learned the expensive way on Phytec, where reading the layer got three of four wrong.
+#
+# Machine is zynqmp-generic, not a board name. scarthgap meta-xilinx replaced the
+# board-specific machines (zcu102-zynqmp and friends) with System-Device-Tree generic ones;
+# zynqmp-eg-generic still exists but its own description says "obsolete, use zynqmp-generic".
+# It carries a QEMU model (QB_MACHINE "-machine arm-generic-fdt"), so unlike the other
+# hardware tiers this one could eventually be booted rather than only built.
+header:
+  version: 14
+  includes:
+    - kas/core.yml
+
+machine: zynqmp-generic
+target: core-image-minimal
+
+repos:
+  meta-xilinx:
+    url: https://github.com/Xilinx/meta-xilinx
+    branch: scarthgap
+    commit: b5f7b674384e66dcfd5ce492a4ee700c3519d194
+    path: layers-50/meta-xilinx
+    layers:
+      meta-xilinx-core:
+      meta-xilinx-bsp:
+
+  # The glue for this tier. No laavat-hab bbappend: there is no HAB on this SoC.
+  sample-xilinx-zynqmp:
+    path: sample-xilinx-zynqmp

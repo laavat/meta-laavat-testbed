@@ -1,0 +1,1978 @@
+<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1">
+<title>meta-laavat</title>
+<style>
+  /* IBM Plex, served from fonts/ next to this page (SIL Open Font License, fonts/OFL.txt) */
+  @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/ibm-plex-mono-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/ibm-plex-mono-latin-500-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Mono"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/ibm-plex-mono-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 400; font-display: swap; src: url("fonts/ibm-plex-sans-latin-400-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 500; font-display: swap; src: url("fonts/ibm-plex-sans-latin-500-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/ibm-plex-sans-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Sans"; font-style: italic; font-weight: 400; font-display: swap; src: url("fonts/ibm-plex-sans-latin-400-italic.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Sans Condensed"; font-style: normal; font-weight: 600; font-display: swap; src: url("fonts/ibm-plex-sans-condensed-latin-600-normal.woff2") format("woff2"); }
+  @font-face { font-family: "IBM Plex Sans Condensed"; font-style: normal; font-weight: 700; font-display: swap; src: url("fonts/ibm-plex-sans-condensed-latin-700-normal.woff2") format("woff2"); }
+
+  :root {
+    --ground:  #F2F1EE;
+    --surface: #FFFFFF;
+    --sunk:    #E7E7E2;
+    --ink:     #15191A;
+    --muted:   #59635F;
+    --line:    #D6D8D3;
+    --line-hi: #BCC1BC;
+    --accent:  #0B6E6B;
+    --accent-soft: #DBE9E7;
+    --warn:    #8A5011;
+    --warn-soft: #F2E7D7;
+    --danger:  #96302F;
+    --danger-soft: #F5E2E1;
+    --shadow: 0 1px 2px rgba(21,25,26,.05), 0 10px 28px -20px rgba(21,25,26,.30);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:  #0F1314;
+      --surface: #161B1C;
+      --sunk:    #1C2223;
+      --ink:     #E3E7E5;
+      --muted:   #939E9A;
+      --line:    #272F2F;
+      --line-hi: #394342;
+      --accent:  #45B9B1;
+      --accent-soft: #12302E;
+      --warn:    #D69B52;
+      --warn-soft: #2C2418;
+      --danger:  #DE7C77;
+      --danger-soft: #2E1D1C;
+      --shadow: 0 1px 2px rgba(0,0,0,.45), 0 10px 28px -20px rgba(0,0,0,.85);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:  #0F1314;
+    --surface: #161B1C;
+    --sunk:    #1C2223;
+    --ink:     #E3E7E5;
+    --muted:   #939E9A;
+    --line:    #272F2F;
+    --line-hi: #394342;
+    --accent:  #45B9B1;
+    --accent-soft: #12302E;
+    --warn:    #D69B52;
+    --warn-soft: #2C2418;
+    --danger:  #DE7C77;
+    --danger-soft: #2E1D1C;
+    --shadow: 0 1px 2px rgba(0,0,0,.45), 0 10px 28px -20px rgba(0,0,0,.85);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px 96px; }
+  .col  { max-width: 68ch; }
+
+  h1, h2, h3, h4 {
+    font-family: "IBM Plex Sans Condensed", "IBM Plex Sans", sans-serif;
+    font-weight: 700;
+    text-wrap: balance;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.1rem); line-height: 1.06; }
+  h2 { font-size: clamp(1.45rem, 2.6vw, 1.85rem); line-height: 1.16; }
+  h3 { font-size: 1.06rem; line-height: 1.3; font-weight: 600; }
+  h4 { font-size: .95rem; font-weight: 600; }
+  p  { margin: 0 0 1em; }
+  a  { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+  a:focus-visible, summary:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px;
+  }
+  code, .mono { font-family: "IBM Plex Mono", ui-monospace, monospace; }
+  code {
+    font-size: .875em;
+    background: var(--sunk);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: .08em .34em;
+  }
+  strong { font-weight: 600; }
+
+  /* ---- masthead ---- */
+  header.top {
+    border-bottom: 1px solid var(--line);
+    background: var(--surface);
+    margin-bottom: 52px;
+  }
+  header.top .wrap { padding-top: 40px; padding-bottom: 38px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .7rem; font-weight: 500;
+    letter-spacing: .13em; text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 18px;
+  }
+  .lede { font-size: 1.15rem; color: var(--muted); margin-top: 18px; max-width: 60ch; }
+  .facts {
+    display: flex; flex-wrap: wrap; gap: 10px 32px;
+    margin-top: 26px; padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: .82rem;
+  }
+  .facts div { display: flex; gap: 9px; align-items: baseline; }
+  .facts .k {
+    font-family: "IBM Plex Mono", monospace; font-size: .68rem;
+    letter-spacing: .1em; text-transform: uppercase; color: var(--muted);
+  }
+  .facts .v { font-family: "IBM Plex Mono", monospace; }
+
+  /* jump nav: every section has a stable id, so any step can be linked directly */
+  nav.jump {
+    display: flex; flex-wrap: wrap; gap: 8px 10px;
+    margin-top: 22px; padding-top: 20px;
+    border-top: 1px solid var(--line);
+  }
+  nav.jump a {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .74rem; letter-spacing: .02em;
+    color: var(--muted); text-decoration: none;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 3px 11px;
+    white-space: nowrap;
+  }
+  nav.jump a:hover { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+  nav.jump a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---- sections ---- */
+  section { margin-bottom: 58px; }
+  .shead { display: flex; align-items: baseline; gap: 14px; margin-bottom: 8px; flex-wrap: wrap; }
+  .step {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .72rem; font-weight: 600; letter-spacing: .08em;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 999px;
+    padding: 1px 9px;
+    white-space: nowrap;
+  }
+  .sub { color: var(--muted); margin: 0 0 24px; max-width: 68ch; }
+  a.anchor {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .85rem; font-weight: 500;
+    color: var(--muted); text-decoration: none;
+    opacity: 0; transition: opacity .12s ease;
+    padding: 0 .3em;
+  }
+  .shead:hover a.anchor, a.anchor:focus-visible { opacity: 1; }
+  a.anchor:hover { color: var(--accent); }
+  @media (hover: none) { a.anchor { opacity: .45; } }
+  section { scroll-margin-top: 16px; }
+
+  /* ---- plain-language summary ---- */
+  .brief {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--accent);
+    border-radius: 5px;
+    padding: 24px 26px;
+    box-shadow: var(--shadow);
+    margin-bottom: 52px;
+  }
+  .brief > h2 { margin-bottom: 16px; }
+  .briefgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px 30px; }
+  .briefgrid h3 {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent); font-weight: 600; margin-bottom: 6px;
+  }
+  .briefgrid p { font-size: .93rem; margin: 0; }
+
+  /* ---- code wells ---- */
+  pre {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .85rem; line-height: 1.7;
+    background: var(--sunk);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--accent);
+    border-radius: 4px;
+    padding: 15px 18px;
+    margin: 0 0 18px;
+    overflow-x: auto;
+  }
+  pre.tree { border-left-color: var(--line-hi); line-height: 1.62; }
+  pre .c  { color: var(--muted); }
+  pre .hl { color: var(--accent); font-weight: 500; }
+  pre .d  { color: var(--accent); }
+
+  /* ---- cards & tables ---- */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+  }
+  .grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 18px; }
+  .card h3 { margin-bottom: 6px; }
+  .card p:last-child { margin-bottom: 0; }
+  .card .tag {
+    display: inline-block;
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .68rem; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 10px;
+  }
+
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+  th, td { text-align: left; padding: 11px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  th {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .68rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); background: var(--sunk);
+  }
+  tr:last-child td { border-bottom: none; }
+  td.nw { white-space: nowrap; }
+
+  /* ---- figures ---- */
+  figure {
+    margin: 0 0 24px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 22px 22px 16px;
+    box-shadow: var(--shadow);
+  }
+  .figscroll { overflow-x: auto; }
+  figure svg { display: block; width: 100%; min-width: 600px; height: auto; color: var(--ink); }
+  figcaption {
+    margin-top: 14px; padding-top: 12px;
+    border-top: 1px solid var(--line);
+    font-size: .84rem; color: var(--muted);
+  }
+  .svg-box   { fill: var(--surface); stroke: var(--line-hi); stroke-width: 1.25; }
+  .svg-box-a { fill: var(--accent-soft); stroke: var(--accent); stroke-width: 1.5; }
+  .svg-box-d { fill: var(--danger-soft); stroke: var(--danger); stroke-width: 1.5; }
+  .svg-band  { fill: var(--sunk); stroke: var(--line-hi); stroke-width: 1.25; }
+  .svg-zone  { fill: none; stroke: var(--line-hi); stroke-width: 1.25; stroke-dasharray: 5 4; }
+  .svg-line  { stroke: currentColor; stroke-width: 1.4; fill: none; }
+  .svg-line-a{ stroke: var(--accent); stroke-width: 1.6; fill: none; }
+  .svg-line-d{ stroke: var(--danger); stroke-width: 1.6; fill: none; }
+  .svg-fill-a{ fill: var(--accent); }
+  .svg-fill-d{ fill: var(--danger); }
+  .svg-t     { font-family: "IBM Plex Sans", sans-serif; font-size: 13px; fill: var(--ink); }
+  .svg-t-b   { font-family: "IBM Plex Sans Condensed", sans-serif; font-size: 14px; font-weight: 700; fill: var(--ink); }
+  .svg-m     { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--muted); }
+  .svg-m-i   { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--ink); }
+  .svg-m-a   { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--accent); }
+  .svg-m-d   { font-family: "IBM Plex Mono", monospace; font-size: 11px; fill: var(--danger); }
+  .svg-n     { font-family: "IBM Plex Mono", monospace; font-size: 11px; font-weight: 600; fill: var(--accent); }
+
+  /* ---- callouts ---- */
+  .note {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 4px 4px 0;
+    padding: 14px 18px;
+    margin: 0 0 20px;
+    font-size: .93rem;
+  }
+  .note.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .note p:last-child { margin-bottom: 0; }
+  .note .lbl {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .68rem; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--accent); display: block; margin-bottom: 5px;
+  }
+  .note.warn .lbl { color: var(--warn); }
+
+  /* ---- collapsibles ---- */
+  details {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  details > summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 15px 20px;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    font-family: "IBM Plex Sans Condensed", sans-serif;
+    font-weight: 700;
+    font-size: 1.02rem;
+  }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary::before {
+    content: "+";
+    font-family: "IBM Plex Mono", monospace;
+    font-weight: 500;
+    color: var(--accent);
+    font-size: 1.05rem;
+    line-height: 1;
+    flex: none;
+  }
+  details[open] > summary::before { content: "-"; }
+  details > summary .hint {
+    margin-left: auto;
+    font-family: "IBM Plex Sans", sans-serif;
+    font-weight: 400;
+    font-size: .82rem;
+    color: var(--muted);
+    text-align: right;
+  }
+  details[open] > summary { border-bottom: 1px solid var(--line); }
+  .dbody { padding: 20px; }
+  .dbody > *:last-child { margin-bottom: 0; }
+
+  /* ---- glossary ---- */
+  dl.gloss { margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 0 34px; }
+  dl.gloss > div { border-top: 1px solid var(--line); padding: 12px 0; }
+  dl.gloss > div:first-child { border-top: none; padding-top: 0; }
+  /* only exempt the second cell while the grid really has two columns */
+  @media (min-width: 580px) {
+    dl.gloss > div:nth-child(2) { border-top: none; padding-top: 0; }
+  }
+  dl.gloss dt {
+    font-family: "IBM Plex Mono", monospace;
+    font-size: .84rem; font-weight: 600; color: var(--accent); margin-bottom: 3px;
+  }
+  dl.gloss dd { margin: 0; font-size: .89rem; color: var(--muted); }
+
+  ul.tight { margin: 0 0 16px; padding-left: 1.15em; }
+  ul.tight li { margin-bottom: .42em; }
+
+  footer.end {
+    border-top: 1px solid var(--line);
+    margin-top: 20px; padding-top: 22px;
+    font-size: .82rem; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 8px 28px;
+  }
+  @media (max-width: 620px) {
+    .wrap { padding: 0 18px 64px; }
+    .shead { flex-direction: column; gap: 6px; }
+    details > summary .hint { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div class="eyebrow">Yocto | 5.0 LTS through 6.0 LTS</div>
+    <h1>Sign a Yocto build<br>without holding the keys</h1>
+    <p class="lede">
+      <code>meta-laavat</code> is a Yocto layer that makes signing a step of the build. A recipe you
+      already own gains one <code>inherit</code> line; the task it brings uploads the artifact to a
+      LAAVAT signing service, gets it back signed, checks it, and lets the build carry on. The private
+      key stays in a hardware security module and never reaches the builder, CI, or this layer. This
+      page is what the layer does, what it costs per board, what it proves, and how to run the whole
+      thing yourself - the first two paths need no account.
+    </p>
+    <div class="facts">
+      <div><span class="k">what it is</span><span class="v">one Yocto layer, ten classes, no Python</span></div>
+      <div><span class="k">for</span><span class="v">Yocto / OE integrators</span></div>
+      <div><span class="k">costs per board</span><span class="v">8 to 12 lines that mention laavat, in a layer you own</span></div>
+      <div><span class="k">releases</span><span class="v">Yocto 5.0 LTS through 6.0 LTS</span></div>
+      <div><span class="k">runtime proof</span><span class="v">an emulated Arm64 board</span></div>
+      <div><span class="k">boot image</span><span class="v">build time only - the ROM check needs fused silicon</span></div>
+    </div>
+    <nav class="jump" aria-label="Sections">
+      <a href="#summary">In one minute</a>
+      <a href="#build-time">How it works</a>
+      <a href="#light">How light it is</a>
+      <a href="#layout">Where things live</a>
+      <a href="#prerequisites">Prerequisites</a>
+      <a href="#run">Build it</a>
+      <a href="#proof">What it proves</a>
+      <a href="#dev-keys">Dev keys</a>
+      <a href="#without-kas">Without kas</a>
+      <a href="#operations">Risk questions</a>
+      <a href="#vocabulary">Vocabulary</a>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="brief" id="summary">
+    <h2>In one minute</h2>
+    <div class="briefgrid">
+      <div>
+        <h3>The problem</h3>
+        <p>
+          Signing firmware needs a private key. Put that key on a build machine or in a CI runner
+          and one leak lets someone else sign firmware your devices will accept as genuine.
+        </p>
+      </div>
+      <div>
+        <h3>What this does</h3>
+        <p>
+          A <code>do_laavat_sign</code> task sits in the recipe's own graph between whatever builds
+          the artifact and whatever consumes it. It uploads the artifact, waits for approval, downloads
+          the result and <strong>checks two digests</strong> before writing the output: that the
+          download is what the service reported, and that the request covers the file this build
+          uploaded. Any failure leaves the output absent, so the build stops rather than shipping
+          unsigned. The signing key itself is generated as non-exportable in the service's
+          hardware security module, which performs signatures inside itself; no operation the
+          service offers exports it.
+        </p>
+      </div>
+      <div>
+        <h3>What it costs to adopt</h3>
+        <p>
+          A layer added to your build, and one <code>inherit</code> line per artifact you want
+          signed, on a bbappend of a recipe you already own. The class knows which file goes up
+          and where the signed one lands; you supply the product and operation ids and, where the
+          device must trust a key, its fingerprint. Measured across ten sample boards: 8 to 12 lines
+          that mention laavat in each, 27 to 42 lines of glue in all once the
+          <code>layer.conf</code> and the RAUC bundle recipe are counted, and no Python. How you fetch layers and which distro you use do not change; your build
+          host gains a network dependency, a token file and a handful of variables. There is no
+          offline mode, and an unreachable service stops the build rather than shipping something
+          unsigned - recoverably, without spending a second approval. The layer is public on
+          GitHub, and the client it drives, <code>signing-tool</code>, comes from PyPI through the
+          layer's own recipe.
+        </p>
+      </div>
+      <div>
+        <h3>Where it stands</h3>
+        <p>
+          Four artifact types have classes: boot image, kernel, trusted applications and update
+          bundle. On an emulated Arm64 board, three of them - kernel, trusted applications, update
+          bundle - are verified <em>at runtime</em> against the service's key by U-Boot, OP-TEE and
+          RAUC, each paired with a tampered copy that is refused. The boot image is checked at build
+          time only, because the chip's boot ROM checks it against a hash fused into the silicon,
+          which no emulator models. Glue exists for ten boards from five vendors; the runtime
+          evidence here comes from the emulated one, and no physical board has booted service-signed
+          firmware yet. "So what happens to the R&amp;D keys?" below has it per artifact.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:52px">
+    <h3 style="margin-bottom:12px">Six words this page leans on</h3>
+    <dl class="gloss">
+      <div><dt>layer</dt><dd>A directory of recipes and settings a build includes. Adding one changes nothing until a recipe uses it.</dd></div>
+      <div><dt>recipe</dt><dd>The instructions to fetch, build and package one component - your kernel, your bootloader.</dd></div>
+      <div><dt>bbappend / inherit</dt><dd>A file that adds to a recipe someone else owns without editing it, and the line in it that pulls in a signing class.</dd></div>
+      <div><dt>BSP</dt><dd>Board Support Package: the vendor layers that make Linux run on your particular board.</dd></div>
+      <div><dt>tier</dt><dd>One build configuration in this test-bed - a board, plus which signing is switched on. Picking a tier is how you build it.</dd></div>
+      <div><dt>pin / fingerprint</dt><dd>The SHA-256 of a public key, written into your build. A key that changes then fails the build instead of quietly becoming what your devices trust.</dd></div>
+    </dl>
+  </div>
+
+  <section id="what-this-is">
+    <div class="col">
+      <div class="shead"><h2>What this is</h2><a class="anchor" href="#what-this-is">#</a></div>
+      <p>
+        <strong>You already have a Yocto build for your board that works.</strong> That is the
+        starting point this is designed around. <code>meta-laavat</code> adds signing to that build
+        and changes nothing else about it - not how you fetch layers, not your distro, not your
+        image recipe. It is one layer of ten bbclasses (plus two internal helpers they share) with no Python in it, and it knows nothing
+        about machines or boards: adding it to <code>BBLAYERS</code> is genuinely inert until one of
+        <em>your</em> recipes inherits one of its classes. That is what makes it safe to drop into a
+        BSP that already works.
+      </p>
+      <p>
+        Two things travel with it. <strong><code>signing-tool</code></strong> is the LAAVAT client,
+        published on PyPI; the classes call it as an ordinary command, so the protocol lives there
+        rather than in your build system. <strong><code>meta-laavat-testbed</code></strong> is a
+        complete Yocto build with every signing path already wired - it exists so you can watch the
+        mechanism run on someone else's board before touching your own, and most of this page is a
+        tour of it for exactly that reason.
+      </p>
+      <p>
+        So: the layer's <a href="https://github.com/laavat/meta-laavat/blob/main/docs/INTEGRATION.md"><code>docs/INTEGRATION.md</code></a> is the walkthrough for your build, target by
+        target. This page is the one that shows you what you would be adopting first.
+      </p>
+    </div>
+  </section>
+
+  <section id="scope">
+    <div class="shead"><span class="step">SCOPE</span><h2>What gets signed</h2><a class="anchor" href="#scope">#</a></div>
+    <p class="sub">
+      Four artifact types have a class of their own, the boot image in three formats. They are not all <em>proven</em> to the same depth, and the difference is the
+      first thing to understand about it. (An <em>operation</em> below is the service's unit of signing capability - one
+      operation, one key behind it.)
+    </p>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Artifact</th><th>Operation</th><th>How far it is proven</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="nw"><strong>Boot image</strong><br><span class="mono" style="font-size:.8rem;color:var(--muted)">imx-boot / flash.bin</span></td>
+            <td class="nw"><code>SignHAB</code><br><span class="mono" style="font-size:.78rem;color:var(--muted)">hab-archive-v1</span></td>
+            <td><strong>Build time only</strong>: signed by a live service, with a CSF block at each of the SPL and U-Boot IVTs, where the ROM will look for one. It can be checked without a board - <code>ivt-csf.py</code> dumps the headers, and <code>hab-verify.py</code> goes further and verifies each CSF's CMS signature and the SRK table hash. What none of that substitutes for is the check the i.MX boot ROM makes against a hash fused into the chip, which happens on silicon and nowhere else.</td>
+          </tr>
+          <tr>
+            <td class="nw"><strong>Boot image, AHAB</strong><br><span class="mono" style="font-size:.8rem;color:var(--muted)">i.MX93 / i.MX8QM flash.bin</span></td>
+            <td class="nw"><code>SignSPSDK</code></td>
+            <td><strong>Build time only</strong>, for the same reason: an AHAB container is authenticated by the boot ROM against a fused key hash. AHAB signs one container rather than per-stage IVTs, so <code>laavat-ahab</code> is a plain file upload - the i.MX93, i.MX8QM and Toradex tiers each wire it with a single <code>inherit</code>.</td>
+          </tr>
+          <tr>
+            <td class="nw"><strong>Boot image, Xilinx</strong><br><span class="mono" style="font-size:.8rem;color:var(--muted)">BOOT.bin (bootgen)</span></td>
+            <td class="nw"><code>SignBootgenImage</code></td>
+            <td><strong>Build time only</strong>, and checked by the ZynqMP CSU boot ROM, which no emulator models either. The service runs <code>bootgen</code> with the key it holds and parses the <code>.bif</code> itself, so no part of the boot-image format is reimplemented on your side.</td>
+          </tr>
+          <tr>
+            <td class="nw"><strong>Kernel</strong><br><span class="mono" style="font-size:.8rem;color:var(--muted)">fitImage</span></td>
+            <td class="nw"><code>SignKernel</code></td>
+            <td><strong>Verified at runtime</strong>, by U-Boot, in the boot path - and refused when a byte is flipped.</td>
+          </tr>
+          <tr>
+            <td class="nw"><strong>Trusted applications</strong><br><span class="mono" style="font-size:.8rem;color:var(--muted)">*.ta</span></td>
+            <td class="nw"><code>OP-TEESigning</code></td>
+            <td><strong>Verified at runtime</strong>, by the TEE core, when one is loaded - and refused for a foreign key or a flipped byte.</td>
+          </tr>
+          <tr>
+            <td class="nw"><strong>Update bundle</strong><br><span class="mono" style="font-size:.8rem;color:var(--muted)">*.raucb</span></td>
+            <td class="nw"><code>RaucBundleSigning-<br>WithOneTimeKey</code></td>
+            <td><strong>Verified at runtime</strong> on the device by <code>rauc info --keyring</code> - the same signature check <code>rauc install</code> performs first - and refused for a dev key or a flipped signature.</td>
+          </tr>
+          <tr>
+            <td class="nw"><strong>Kernel modules</strong><br><span class="mono" style="font-size:.8rem;color:var(--muted)">*.ko</span></td>
+            <td class="nw">--</td>
+            <td>Not signed through the service, deliberately. The kernel signs each module during its own build, so there is no per-artifact step to hook and no service operation for one. It stays on the kernel's own key.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="note" style="margin-top:20px">
+      <span class="lbl">why the boot image is verified differently</span>
+      <p style="margin-bottom:0">
+        Every other artifact is verified by software this build produces, so the demo can boot it and
+        watch. The boot image is verified by the silicon, against a key hash burned irreversibly into
+        fuses. Burning those fuses is a one-way door on a real board, which is why the boot image
+        stops at build-time verification here and why the last step of adopting it is yours.
+      </p>
+    </div>
+  </section>
+
+  <section id="build-time">
+    <div class="shead"><span class="step">MECHANISM</span><h2>What happens during a build</h2><a class="anchor" href="#build-time">#</a></div>
+    <p class="sub">
+      Nothing is signed after the build. <code>do_laavat_sign</code> is a task in the recipe's own
+      graph, flagged <code>[network] = "1"</code>, sitting between whatever produces the artifact and
+      whatever consumes it. Its body is one <code>signing-tool imagesigning sign</code> call: the four
+      steps below happen inside the client, and the class only assembles the command line.
+    </p>
+
+    <figure>
+      <div class="figscroll">
+      <svg viewBox="0 0 880 392" role="img" aria-label="The do_laavat_sign task sits between do_compile and do_deploy. Inside it: open a request and upload, wait for approval, download the signed bytes, then verify two digests locally. Only the artifact crosses the network boundary; the private key stays in the service HSM.">
+        <defs>
+          <marker id="f1a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+          </marker>
+          <marker id="f1b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="svg-fill-a" d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+        </defs>
+
+        <text class="svg-m" x="24" y="20">your recipe's task graph</text>
+        <rect class="svg-box"   x="24"  y="30" width="180" height="42" rx="4"></rect>
+        <text class="svg-t"     x="114" y="56" text-anchor="middle">do_compile</text>
+        <line class="svg-line"  x1="204" y1="51" x2="248" y2="51" marker-end="url(#f1a)"></line>
+        <rect class="svg-box-a" x="252" y="30" width="196" height="42" rx="4"></rect>
+        <text class="svg-t-b"   x="350" y="56" text-anchor="middle">do_laavat_sign</text>
+        <line class="svg-line"  x1="448" y1="51" x2="492" y2="51" marker-end="url(#f1a)"></line>
+        <rect class="svg-box"   x="496" y="30" width="180" height="42" rx="4"></rect>
+        <text class="svg-t"     x="586" y="56" text-anchor="middle">do_deploy</text>
+
+        <line class="svg-line-a" x1="350" y1="72" x2="350" y2="108" marker-end="url(#f1b)"></line>
+
+        <rect class="svg-zone" x="24" y="112" width="500" height="230" rx="6"></rect>
+        <text class="svg-m" x="40" y="132">inside do_laavat_sign | on the builder</text>
+
+        <rect class="svg-box" x="44" y="142" width="220" height="38" rx="4"></rect>
+        <text class="svg-n"   x="58"  y="166">1</text>
+        <text class="svg-t"   x="76"  y="166">open request, upload</text>
+
+        <rect class="svg-box" x="44" y="192" width="220" height="38" rx="4"></rect>
+        <text class="svg-n"   x="58"  y="216">2</text>
+        <text class="svg-t"   x="76"  y="216">wait for approval</text>
+
+        <rect class="svg-box" x="44" y="242" width="220" height="38" rx="4"></rect>
+        <text class="svg-n"   x="58"  y="266">3</text>
+        <text class="svg-t"   x="76"  y="266">download result</text>
+
+        <rect class="svg-box-a" x="44" y="292" width="220" height="38" rx="4"></rect>
+        <text class="svg-n"     x="58"  y="316">4</text>
+        <text class="svg-t"     x="76"  y="316">verify two digests</text>
+        <text class="svg-m"     x="276" y="312">no network --</text>
+        <text class="svg-m"     x="276" y="326">checked locally</text>
+
+        <line class="svg-zone" x1="556" y1="112" x2="556" y2="342"></line>
+        <text class="svg-m" x="551" y="130" text-anchor="end">network boundary</text>
+
+        <rect class="svg-box" x="594" y="142" width="262" height="200" rx="5"></rect>
+        <text class="svg-t-b" x="725" y="168" text-anchor="middle">LAAVAT service</text>
+        <rect class="svg-box-a" x="614" y="256" width="222" height="66" rx="4"></rect>
+        <text class="svg-t"   x="725" y="278" text-anchor="middle">HSM</text>
+        <text class="svg-m"   x="725" y="294" text-anchor="middle">hardware security module</text>
+        <text class="svg-m-a" x="725" y="312" text-anchor="middle">private key generated non-exportable</text>
+
+        <line class="svg-line" x1="266" y1="161" x2="590" y2="161" marker-end="url(#f1a)"></line>
+        <text class="svg-m" x="428" y="153" text-anchor="middle">artifact + product/operation ids</text>
+
+        <line class="svg-line" x1="266" y1="211" x2="590" y2="211" marker-start="url(#f1a)" marker-end="url(#f1a)"></line>
+        <text class="svg-m" x="428" y="203" text-anchor="middle">poll until approved</text>
+
+        <line class="svg-line" x1="590" y1="261" x2="266" y2="261" marker-end="url(#f1a)"></line>
+        <text class="svg-m" x="428" y="253" text-anchor="middle">signed bytes + two digests</text>
+
+        <text class="svg-m" x="24" y="368">on success -> the signed file is written</text>
+        <text class="svg-m" x="24" y="384">on any failure -> the output path stays absent. There is no unsigned fallback.</text>
+      </svg>
+      </div>
+      <figcaption>
+        Only the artifact crosses the boundary. Step 4 checks that the download is what the service
+        says it produced <em>and</em> that it covers the file you actually submitted - approval can
+        take days, over which a build tree moves. The same command resumes a pending request when the
+        input has not changed, so a re-run never spends a second approval.
+      </figcaption>
+    </figure>
+
+    <div class="note">
+      <span class="lbl">why the HSM is the whole point</span>
+      <p>
+        A <strong>Hardware Security Module</strong> is purpose-built tamper-resistant hardware whose
+        defining property is that a key can be generated inside it as <em>non-exportable</em>. The
+        service's signing keys are generated that way, and no operation the service offers exports
+        them. Software asks the HSM to sign; it returns a signature. The key is never handed to the
+        builder as a file that can be copied.
+      </p>
+      <p style="margin-bottom:0">
+        That is what changes the blast radius. A build machine holding a signing key is one compromise
+        away from an attacker signing their own firmware for your devices, and you would not
+        necessarily know. A build machine talking to an HSM can, at worst, get things signed <em>while
+        it is compromised</em> - a serious outcome, but one that is recorded in the service's request
+        log, stoppable by revoking a token, and preventable by four-eyes approval, under which a
+        person approves each request. The key survives the incident. Be clear which mode you run:
+        every example here self-approves, which protects the key but not against a compromised
+        builder submitting an artifact of its own.
+      </p>
+    </div>
+
+    <details>
+      <summary>Step 2, approval - automatic or four-eyes <span class="hint">one variable picks which</span></summary>
+      <div class="dbody">
+        <p>
+          A signing request has to be approved before the service will sign it. Which mode you get is
+          decided by one variable, <code>LAAVAT_APPROVER_TOKEN_FILE</code>, and both modes are
+          legitimate - they answer different questions.
+        </p>
+        <div class="grid3" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-bottom:18px">
+          <div class="card">
+            <span class="tag">set the variable</span>
+            <h3>Auto-approval</h3>
+            <p>
+              The build approves its own request and never blocks. This is what every example in this
+              repo does, and what makes <code>make qemu-demo</code> a single unattended command. Use it
+              for CI, nightly builds and development.
+            </p>
+            <p style="margin-bottom:0"><em>Still use a token belonging to a different principal than the
+            requester</em> - otherwise the approval step records nothing meaningful. And be clear about
+            what this mode does not buy you: it keeps the key safe, but it does <strong>not</strong> stop
+            a compromised build from getting an attacker's artifact legitimately signed. Only four-eyes
+            does that.</p>
+          </div>
+          <div class="card">
+            <span class="tag">leave it unset</span>
+            <h3>Four-eyes</h3>
+            <p>
+              The build blocks until a human approves, up to <code>LAAVAT_SIGN_TIMEOUT</code>
+              (30 minutes by default). Production release builds typically want this: a person, not a
+              pipeline, decides that these exact bytes get the product's signature.
+            </p>
+            <p style="margin-bottom:0">Raise the timeout if approval routinely takes longer than the wait.</p>
+          </div>
+        </div>
+        <p style="margin-bottom:0">
+          <strong>One trap worth knowing before you split dev from release.</strong> The approver
+          token is a path, and paths are deliberately kept out of the task hash - otherwise moving
+          your token file would re-sign everything and spend a fresh approval on bytes that did not
+          change. The consequence is that approval <em>mode</em> is not part of the hash either: if a
+          self-approving CI build and a four-eyes release build share one sstate mirror and the same
+          operation id, the release build can be satisfied from the cache and no human ever sees
+          those bytes. Give release builds their own operation, their own sstate, or both.
+        </p>
+        <p style="margin-bottom:0">
+          <strong>A timeout is not a lost request.</strong> If the wait runs out, the request stays
+          alive on the service. Approve it and re-run the task: the log says
+          <code>resuming signing request &lt;id&gt;</code>, meaning the same request was picked up rather
+          than a second one opened. The same resume covers an expired token or an interrupted CI job -
+          which is why the resume state deliberately lives outside the recipe's work directory, where
+          a clean would otherwise destroy it.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section id="light">
+    <div class="shead"><span class="step">WEIGHT</span><h2>How light it actually is</h2><a class="anchor" href="#light">#</a></div>
+    <p class="sub">
+      "Light" is a measurement here, not a mood. The test-bed carries ten sample layers, one per
+      board, and <code>make simplicity</code> counts them: non-comment lines across every recipe,
+      append and <code>layer.conf</code>, failing on any Python file or on a layer over 70 lines.
+      Measured 2026-11-06.
+    </p>
+
+    <div class="tablewrap" style="margin-bottom:20px">
+      <table>
+        <thead><tr><th>Sample layer</th><th>SoC / vendor</th><th>Boot ROM</th><th>Lines</th><th>Mentioning laavat</th></tr></thead>
+        <tbody>
+          <tr><td class="nw"><code>sample-xilinx-zynqmp</code></td><td>Zynq UltraScale+ / AMD</td><td>CSU (bootgen)</td><td>27</td><td>10</td></tr>
+          <tr><td class="nw"><code>sample-nxp-imx8mm</code></td><td>i.MX8MM / NXP EVK</td><td>HABv4</td><td>28</td><td>11</td></tr>
+          <tr><td class="nw"><code>sample-nxp-imx93</code></td><td>i.MX93 / NXP</td><td>AHAB (ELE)</td><td>28</td><td>11</td></tr>
+          <tr><td class="nw"><code>sample-nxp-imx8qm</code></td><td>i.MX8QM / NXP</td><td>AHAB (SECO)</td><td>28</td><td>11</td></tr>
+          <tr><td class="nw"><code>sample-toradex-imx8qm</code></td><td>i.MX8QM / Toradex</td><td>AHAB (SECO)</td><td>28</td><td>11</td></tr>
+          <tr><td class="nw"><code>sample-nxp-imx6</code></td><td>i.MX6 / NXP</td><td>HABv4</td><td>29</td><td>12</td></tr>
+          <tr><td class="nw"><code>sample-phytec-imx8mm</code></td><td>i.MX8MM / Phytec</td><td>HABv4</td><td>29</td><td>12</td></tr>
+          <tr><td class="nw"><code>sample-variscite-imx8mm</code></td><td>i.MX8MM / Variscite</td><td>HABv4</td><td>36</td><td>10</td></tr>
+          <tr><td class="nw"><code>sample-qemu-arm64</code></td><td>qemuarm64-secureboot</td><td>TF-A chain, no ROM check</td><td>42</td><td>8</td></tr>
+          <tr><td class="nw"><code>sample-qemu-arm64-yocto53</code></td><td>the same, Yocto 5.3+ delta</td><td>-</td><td>9</td><td>2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="col">
+      Of a 28-line layer, 7 lines are <code>layer.conf</code> and about 15 are the meta-rauc bundle
+      recipe anyone adopting RAUC writes anyway. The signing itself is the remainder: a guarded
+      <code>inherit</code> per target, two or three board facts a class cannot discover, and one CA
+      pin. The QEMU layer is the largest because it also ships the emulated machine's own quirks - a
+      U-Boot config fragment and a tools install the demo harness needs - none of which is signing.
+    </p>
+
+    <details>
+      <summary>Two of those lines, verbatim <span class="hint">the whole integration of a target</span></summary>
+      <div class="dbody">
+        <p>Trusted-application signing on <code>optee-os</code>, from the QEMU sample layer. The guard is the test-bed's, so one tree builds every tier with and without signing; a layer with one policy writes the bare <code>inherit</code>:</p>
+<pre><span class="hl">inherit</span> ${@'laavat-optee' if d.getVar('LAAVAT_OPTEE_SIGN') == '1' else ''}</pre>
+        <p>The boot image on the Variscite tier. This is the only target that ever needs more than the inherit, and only because an i.MX BSP routinely builds several boot images from one recipe and the class refuses to guess which one ships:</p>
+<pre><span class="hl">inherit</span> ${@'laavat-hab' if d.getVar('LAAVAT_HAB_ARCHIVE') == '1' else ''}
+LAAVAT_HAB_IMAGE       = <span class="c">"${S}/${BOOT_IMAGE_SD}"</span>
+LAAVAT_HAB_DEPLOY_NAME = <span class="c">"${UUU_BOOTLOADER}"</span></pre>
+        <p style="margin-bottom:0">
+          Everything else - finding the binary, reading the IVT block addresses back out of it,
+          rendering the request, packing, unpacking, the resume state, the digest checks - belongs
+          to the class or to the client, and none of it is yours.
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>What lives where, and why <span class="hint">the rule that keeps the layer thin</span></summary>
+      <div class="dbody">
+        <p>
+          A build layer that grows its own signing client ends up as a second implementation of
+          someone else's protocol, and a second implementation drifts from the first. One rule keeps
+          that from happening here: <em>if it would pass a unit test with no bitbake stub, it is not
+          the layer's</em>.
+        </p>
+        <div class="tablewrap" style="margin-bottom:18px">
+          <table>
+            <thead><tr><th>Kind of knowledge</th><th>For example</th><th>Where it lives</th></tr></thead>
+            <tbody>
+              <tr><td class="nw"><strong>Build-system glue</strong></td><td>which task runs when, guarded inherits, where a signed file is installed</td><td><code>meta-laavat</code> - ten classes and two shared helpers, every task a shell function, and nothing else in the layer at all</td></tr>
+              <tr><td class="nw"><strong>Protocol and transport</strong></td><td>upload, resume, approval, waiting, both digest checks, install, archive packing, HAB request rendering</td><td><code>signing-tool</code>, as the verbs <code>sign</code>, <code>pack</code>, <code>unpack</code> and <code>hab-request</code> - one implementation, shared by every caller and released on its own</td></tr>
+              <tr><td class="nw"><strong>Format knowledge</strong></td><td>where an IVT sits in a boot image, what a <code>.bif</code> means</td><td>the service, wherever it can be - it parses the <code>.bif</code> itself, so a BIF setting like <code>bh_auth_enable</code> is read by the tool that acts on it. i.MX IVT offsets are read out of the image by the client, because they are a property of the built binary rather than of the recipe</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-bottom:0">
+          What keeps it that way is a test, not a convention: <code>tests/test_layer_shape.py</code>
+          in the layer fails if any class grows a <code>python do_*</code> task or a <code>def</code>,
+          if a parse-time block reads a <code>LAAVAT_*</code> variable, or if a class passes the
+          client a flag its real argument parser does not have. It needs no bitbake, so it runs in
+          ordinary CI.
+        </p>
+      </div>
+    </details>
+
+    <div class="note">
+      <span class="lbl">which client the classes need</span>
+      <p style="margin-bottom:0">
+        The classes call <code>signing-tool</code>, the LAAVAT client, which owns the round trip.
+        It is public on PyPI, and the layer's own recipe builds it from there -
+        <strong>3.11.0</strong> - so the build provides its own client and there is nothing to
+        install or stage. To use a different build of the client (a pre-release, a fork), add a
+        recipe at your own <code>PV</code> and select it with
+        <code>PREFERRED_VERSION_signing-tool</code>. A client too old for the layer is caught by the
+        first signing task, which names the version it needs, so this fails loudly rather than
+        silently.
+      </p>
+    </div>
+  </section>
+
+  <section id="layout">
+    <div class="shead"><span class="step">ORIENTATION</span><h2>Where everything lives</h2><a class="anchor" href="#layout">#</a></div>
+    <p class="sub">
+      Three kinds of thing sit in this repo, and knowing which is which saves the most time: what
+      you edit, what gets fetched for you, and what the build generates. Only the first is in git.
+    </p>
+
+    <figure>
+      <div class="figscroll">
+      <svg viewBox="0 0 880 372" role="img" aria-label="Three bands. Tracked in git: the Makefile, kas configs, the example glue layer, scripts and docs. Fetched and gitignored: the layers directory, filled by make fetch and make fetch-laavat. Generated and gitignored: the build directory holding downloads, sstate cache, work tree and the deploy images where signed artifacts land.">
+        <defs>
+          <marker id="f2a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="svg-fill-a" d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+        </defs>
+
+        <!-- band 1 -->
+        <rect class="svg-box" x="188" y="24" width="668" height="96" rx="5"></rect>
+        <text class="svg-t-b" x="208" y="48">tracked in git</text>
+        <text class="svg-m"   x="208" y="66">what you clone, read and edit</text>
+        <text class="svg-m-i" x="208" y="90">Makefile   kas/   sample-*/ (ten)   testbed-fixtures/   scripts/   docs/</text>
+        <text class="svg-m-i" x="208" y="108">kas-container   README.md   RUNBOOK.md   DEMO.md</text>
+        <text class="svg-m"   x="24"  y="76">git clone</text>
+        <line class="svg-line-a" x1="120" y1="72" x2="184" y2="72" marker-end="url(#f2a)"></line>
+
+        <!-- band 2 -->
+        <rect class="svg-band" x="188" y="140" width="668" height="96" rx="5"></rect>
+        <text class="svg-t-b" x="208" y="164">layers-50/ - fetched, gitignored</text>
+        <text class="svg-m"   x="208" y="182">pinned to exact commits | never hand-edit</text>
+        <text class="svg-m-i" x="208" y="206">poky   meta-openembedded   meta-arm   meta-rauc   meta-security</text>
+        <text class="svg-m-i" x="208" y="224">meta-freescale   meta-imx   meta-variscite-*   </text>
+        <text class="svg-m-a" x="620" y="224">meta-laavat</text>
+        <text class="svg-m"   x="24"  y="180">make fetch</text>
+        <text class="svg-m"   x="24"  y="198">make fetch-laavat</text>
+        <line class="svg-line-a" x1="150" y1="188" x2="184" y2="188" marker-end="url(#f2a)"></line>
+
+        <!-- band 3 -->
+        <rect class="svg-band" x="188" y="256" width="668" height="96" rx="5"></rect>
+        <text class="svg-t-b" x="208" y="280">build/ - generated, gitignored</text>
+        <text class="svg-m"   x="208" y="298">~35 GB | make clean-tmp drops tmp/ and keeps the caches</text>
+        <text class="svg-m-i" x="208" y="322">downloads/   sstate-cache/   tmp/work/   logs/   laavat/ (your tokens)</text>
+        <rect class="svg-box-a" x="204" y="330" width="330" height="16" rx="3"></rect>
+        <text class="svg-m-a" x="212" y="342">tmp/deploy/images/ - signed artifacts land here</text>
+        <text class="svg-m"   x="24"  y="304">bitbake</text>
+        <line class="svg-line-a" x1="110" y1="300" x2="184" y2="300" marker-end="url(#f2a)"></line>
+      </svg>
+      </div>
+      <figcaption>
+        <code>layers-50/</code> is fully reproducible from the tracked half, and so is most of
+        <code>build/</code> - with two exceptions worth knowing before you delete it:
+        <code>build/laavat/</code> holds your credentials and <code>build/logs/</code> holds captured
+        evidence. Neither comes back from git.
+      </figcaption>
+    </figure>
+
+    <details>
+      <summary>The repo, directory by directory <span class="hint">what each thing is for</span></summary>
+      <div class="dbody">
+<pre class="tree"><span class="d">meta-laavat-testbed/</span>
++-- <span class="hl">Makefile</span>              <span class="c">every command on this page; thin wrapper over kas-container</span>
++-- <span class="hl">kas-container</span>         <span class="c">vendored kas 4.7, byte-identical to upstream - do not bump</span>
++-- <span class="d">kas/</span>                  <span class="c">build configs. The tier you build IS the config you pick.</span>
+|   +-- core.yml         <span class="c">machine-neutral: poky, meta-oe, distro settings</span>
+|   +-- imx.yml, base.yml, all.yml   <span class="c">the Variscite i.MX8MM tiers: BSP, V0 baseline, V1 dev-key</span>
+|   +-- fit|hab|rauc|verity|modsign|optee.yml   <span class="c">one feature each</span>
+|   +-- <span class="d">laavat/</span>          <span class="c">one fragment per signing target, each off unless its guard is set</span>
+|   +-- laavat-live.yml  <span class="c">V2: the i.MX tier signed by a real service</span>
+|   +-- qemu.yml, qemu-live.yml   <span class="c">the emulated machine; -live is the tier proven at runtime</span>
+|   +-- imx-evk|imx-phytec|imx6|imx93|imx8qm|toradex-imx8qm|xilinx-zynqmp.yml   <span class="c">the other boards</span>
+|   +-- *-live.yml, *-offline.yml   <span class="c">each of those signed by a service, or parsed with no account</span>
+|   +-- styhead|walnascar|whinlatter|wrynose.yml   <span class="c">the QEMU tier on Yocto 5.1 / 5.2 / 5.3 / 6.0</span>
+|   +-- check-layer.yml  <span class="c">a poky-only build for Yocto's own yocto-check-layer</span>
+|   \-- lowmem.yml, qemu-warm.yml   <span class="c">host tuning; warm the sstate with signing skipped</span>
++-- <span class="d">sample-&lt;vendor&gt;-&lt;soc&gt;/</span>   <span class="c">TEN GLUE LAYERS, one per board - the part you write for yours</span>
+|   +-- conf/layer.conf  <span class="c">an ordinary layer, seven lines</span>
+|   +-- recipes-bsp/     <span class="c">boot-image and u-boot bbappends: a guarded inherit plus board facts</span>
+|   +-- recipes-kernel/  <span class="c">the kernel bbappend: a guarded inherit</span>
+|   +-- recipes-core/    <span class="c">the RAUC bundle recipe, and the keyring append with its CA pin</span>
+|   \-- recipes-security/  <span class="c">the optee-os bbappend: a guarded inherit</span>
++-- <span class="d">testbed-fixtures/</span>     <span class="c">scaffolding that is NOT integration: smoke recipes, the in-image</span>
+|                         <span class="c">boot check, and the dev-key directory (generated keys, placeholder CA)</span>
++-- <span class="d">scripts/</span>              <span class="c">verification, not building</span>
+|   +-- verify-signing.sh<span class="c">host-side PASS/FAIL per component (make verify)</span>
+|   +-- boot-verify.py   <span class="c">boots under QEMU, asserts the log, does the tampering</span>
+|   +-- laavat-stub.py   <span class="c">fake signing service for the no-account paths</span>
+|   +-- stub-smoke.sh    <span class="c">every client verb the classes call, against the stub (make stub-smoke)</span>
+|   +-- simplicity.sh    <span class="c">the line count above (make simplicity)</span>
+|   +-- gen-dev-keys.sh  <span class="c">the throwaway RAUC dev keys (make dev-keys; run by the build targets)</span>
+|   +-- hab-verify.py, optee-verify.py  <span class="c">offline signature verification</span>
+|   +-- ivt-csf.py       <span class="c">IVT/CSF header dump - says a CSF is there, not that it is valid</span>
+|   \-- disk-check.sh    <span class="c">make disk; df is the truth on btrfs, du is not</span>
++-- <span class="d">docs/</span>                 <span class="c">integration-matrix.md and yocto-matrix.md - which boards, which</span>
+|                         <span class="c">releases; one port log per vendor; presentation/ - this page</span>
++-- <span class="d">layers-50/</span>            <span class="c">gitignored - filled by make fetch / make fetch-laavat (Yocto 5.0)</span>
++-- <span class="d">layers-51..60/</span>        <span class="c">the same per other release; two releases cannot share a checkout</span>
+\-- <span class="d">build/</span>, build-51..60/ <span class="c">gitignored - everything bitbake generates, one per release</span></pre>
+        <p style="margin-top:16px;margin-bottom:0">
+          The one rule: <strong>never hand-edit <code>layers-50/meta-laavat/</code></strong>.
+          <code>make fetch-laavat</code> checks it out at the pinned release
+          (<code>LAAVAT_REF</code>), and with <code>LAAVAT_SRC=/path/to/checkout</code> it rsyncs
+          your own checkout over it with <code>--delete</code>, so edits there vanish. Edit the layer
+          in your own checkout and install that.
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Inside <code>meta-laavat</code> - the layer itself <span class="hint">one class per target</span></summary>
+      <div class="dbody">
+<pre class="tree"><span class="d">meta-laavat/</span>
++-- <span class="d">classes/</span>
+|   +-- <span class="hl">laavat-sign.bbclass</span>       <span class="c">the engine: adds do_laavat_sign</span>
+|   +-- laavat-client.bbclass    <span class="c">internal helper: runs the client, checks it is new enough</span>
+|   +-- laavat-fitkey-base.bbclass  <span class="c">internal helper: what the two FIT classes share</span>
+|   +-- laavat-hab.bbclass       <span class="c">boot image: pack the request, sign, deploy</span>
+|   +-- laavat-ahab.bbclass      <span class="c">AHAB boot image (i.MX93 ELE, i.MX8QM SECO)</span>
+|   +-- laavat-bootgen.bbclass   <span class="c">Xilinx BOOT.bin, via the service's own bootgen</span>
+|   +-- laavat-fitkey.bbclass    <span class="c">sign the kernel FIT (on the kernel recipe)</span>
+|   +-- laavat-fitimage.bbclass  <span class="c">the same, on Yocto 5.3+ where the FIT has its own recipe</span>
+|   +-- laavat-fitkey-uboot.bbclass  <span class="c">put its key in U-Boot's control DTB</span>
+|   +-- laavat-rauc.bbclass      <span class="c">re-sign the finished update bundle</span>
+|   +-- laavat-rauc-keyring.bbclass  <span class="c">install the issuing CA on the device</span>
+|   \-- laavat-optee.bbclass     <span class="c">TA anchor, then sign every trusted app</span>
++-- <span class="d">tests/</span>               <span class="c">what stops the layer becoming a program again</span>
+|   \-- test_layer_shape.py  <span class="c">no python tasks, no lib/, and every flag a class passes
+                             is a flag the client really has - checked against its
+                             argparse tree, with no bitbake needed to run it</span>
++-- <span class="d">recipes-devtools/</span>     <span class="c">the signing client, so the build provides its own</span>
+|   +-- signing-tool/    <span class="c">the LAAVAT client, 3.11.0 from PyPI</span>
+|   \-- python/          <span class="c">python3-jwcrypto - a dependency no public layer carries</span>
++-- <span class="d">conf/layer.conf</span>       <span class="c">depends on core + meta-python; Yocto 5.0, 5.1, 5.2, 5.3 and 6.0</span>
++-- <span class="d"><a href="https://github.com/laavat/meta-laavat/blob/main/docs/INTEGRATION.md">docs/INTEGRATION.md</a></span>   <span class="c">the ten-section guide for adding this to your own build</span>
++-- <a href="https://github.com/laavat/meta-laavat/blob/main/README.md">README.md</a>            <span class="c">reference: every class and variable, the verification rules</span>
+\-- SECURITY.md</pre>
+        <p style="margin-top:16px;margin-bottom:0">
+          Note what is <em>not</em> here: no machine names, no recipe names, no product ids - and no
+          <code>lib/</code>: ten classes and two helpers, every task a shell function. That
+          separation is what lets one layer serve every customer - see
+          <a href="#split">where your code goes</a>.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section id="prerequisites">
+    <div class="shead"><span class="step">STEP 1</span><h2>What you need on the host</h2><a class="anchor" href="#prerequisites">#</a></div>
+    <p class="sub">
+      Less than you would expect: the build host lives inside a container image, so your machine
+      supplies a container engine and little else.
+    </p>
+
+    <div class="tablewrap" style="margin-bottom:20px">
+      <table>
+        <thead><tr><th>Requirement</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td class="nw"><strong>Linux x86-64</strong></td><td>The BSP layers and the container image assume it.</td></tr>
+          <tr><td class="nw"><strong>Docker or Podman</strong></td><td>Either works - <code>kas-container</code> picks whichever it finds. With Docker, <code>docker info</code> must work without <code>sudo</code>: add yourself to the <code>docker</code> group and log in again, or use rootless Docker.</td></tr>
+          <tr><td class="nw"><strong><code>git make rsync tar</code></strong></td><td>Plus the usual coreutils, <code>awk</code> and <code>diff</code> that <code>make disk</code> and <code>make delta</code> use. Plus <code>openssl</code>, which <code>make dev-keys</code> uses to generate the throwaway RAUC development keys, and <code>python3</code> with the client from PyPI (<code>pip install signing-tool</code>) if you run <code>make stub-smoke</code> on the host. Everything else is in the image - there is deliberately no bitbake to install and no build host to set up.</td></tr>
+          <tr><td class="nw"><strong>~35 GB free</strong></td><td>Budget this much on the filesystem holding <code>build/</code>, plus room for the container image. <code>make disk</code> reports usage; it only fails outright below 10 GB free.</td></tr>
+          <tr><td class="nw"><strong>RAM and cores</strong></td><td>A wall-clock knob, not a floor. 8 GB works, 16 GB is comfortable; times here are for 12 cores.</td></tr>
+          <tr><td class="nw"><strong>Network</strong></td><td>GitHub and <code>downloads.yoctoproject.org</code>, plus PyPI once <code>meta-laavat</code> is in the build (its recipe fetches the signing client from there). A LAAVAT service is needed only for the last path below.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <details open>
+      <summary>What <code>kas</code> and <code>kas-container</code> are <span class="hint">the one piece of jargon that matters</span></summary>
+      <div class="dbody">
+        <p>
+          <a href="https://kas.readthedocs.io/">kas</a> is a Siemens tool that describes a whole Yocto
+          build - which layers, at which commits, which machine, which <code>local.conf</code> lines -
+          in one YAML file. <code>kas build kas/all.yml</code> replaces "clone eight repos, write
+          <code>bblayers.conf</code>, source the environment, run bitbake".
+        </p>
+        <p>
+          Configs <strong>compose</strong>, which is the part worth internalising here: every tier in
+          this repo is the same tree with a different config selected. <code>kas/all.yml</code> is
+          <code>kas/base.yml</code> plus one fragment per feature; the service-signed tier is that
+          plus the LAAVAT fragments. Nothing is branched or copied.
+        </p>
+        <p>
+          <code>kas-container</code> is a shell script that runs kas <em>inside</em> a container image
+          that already has a working build host in it. That is why your machine needs so little. The
+          script is vendored in this repo, byte-identical to upstream tag 4.7, so you do not install
+          kas either.
+        </p>
+        <p style="margin-bottom:0">
+          Coming from <code>repo</code> and <code>oe-init-build-env</code>? A kas config is a manifest
+          and a <code>local.conf</code> fused into one file. <code>make shell</code> still drops you
+          into an ordinary bitbake environment inside the container if you would rather drive it by
+          hand - <code>bitbake</code>, <code>bitbake-layers</code>, <code>devshell</code> and the rest
+          all behave normally in there.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section id="run">
+    <div class="shead"><span class="step">STEP 2</span><h2>Get it and build it</h2><a class="anchor" href="#run">#</a></div>
+    <p class="sub">
+      Three paths, each adding one requirement to the last. Start at the top; if the last one fails,
+      the earlier ones tell you which half broke.
+    </p>
+
+    <div class="grid3" style="margin-bottom:22px">
+      <div class="card">
+        <span class="tag">Path A | no account</span>
+        <h3>Build it</h3>
+        <p>A complete i.MX8MM image with every signing path on, using local development keys. Proves the BSP and the wiring.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Path B | no account</span>
+        <h3>Sign one artifact</h3>
+        <p>Three checks, still without an account: the client's verbs against a stub, a real bitbake build with signing skipped, and the signing task end to end against the stub inside the container.</p>
+      </div>
+      <div class="card">
+        <span class="tag">Path C | needs a service</span>
+        <h3>The demo</h3>
+        <p>Builds against a live LAAVAT service, boots the result and asserts what the boot proves - then requires tampered artifacts to be refused.</p>
+      </div>
+    </div>
+
+    <pre><span class="c"># get the tree, the pinned BSP layers, and the layer itself</span>
+git clone https://github.com/laavat/meta-laavat-testbed.git &amp;&amp; cd meta-laavat-testbed
+make fetch                 <span class="c"># also generates the throwaway RAUC dev keys (make dev-keys)</span>
+make fetch-laavat          <span class="c"># github.com/laavat/meta-laavat at the pinned release, LAAVAT_REF (v1.0.0)</span>
+<span class="c"># optional: install your own checkout of the layer instead</span>
+<span class="c"># make fetch-laavat LAAVAT_SRC=/path/to/meta-laavat</span>
+
+<span class="c"># Path A - ~2 h, dev keys, no credentials of any kind</span>
+mkdir -p build/logs        <span class="c"># build/ is gitignored; the shell opens the redirect before make runs</span>
+setsid nohup <span class="hl">make build</span> &gt; build/logs/v1.log 2&gt;&amp;1 &amp;
+
+<span class="c"># ...then, once that build has finished (tail -f build/logs/v1.log)</span>
+<span class="hl">make verify</span>          <span class="c"># PASS/FAIL/SKIP per component; a SKIP fails too where the tier requires it</span>
+
+<span class="c"># Path B - still no account, no network beyond source fetching</span>
+<span class="hl">make stub-smoke</span>      <span class="c"># seconds, on the host: every client verb the classes call, the key pin both ways</span>
+<span class="hl">make skip-smoke</span>      <span class="c"># real bitbake: a signing target through do_deploy with LAAVAT_SIGN_SKIP set</span>
+<span class="c"># then the signing task end to end against the stub inside the container: six lines, RUNBOOK.md "Path B"</span></pre>
+
+    <div class="note">
+      <span class="lbl">where the layer comes from</span>
+      <p style="margin-bottom:0">
+        <code>meta-laavat</code> is public at
+        <a href="https://github.com/laavat/meta-laavat">github.com/laavat/meta-laavat</a>.
+        <code>make fetch-laavat</code> clones it into <code>layers-50/meta-laavat</code> and checks out
+        the pinned release named by <code>LAAVAT_REF</code> (default <code>v1.0.0</code>), so it is an
+        ordinary pinned layer like every other. <code>LAAVAT_SRC</code> is only for working on the
+        layer itself: point it at a local checkout directory and that is installed instead.
+      </p>
+    </div>
+
+    <div class="note">
+      <span class="lbl">why <code>setsid nohup</code></span>
+      <p>
+        A Yocto build killed mid-compile leaves truncated object files, and the next run fails with a
+        bogus "undefined reference" in openssl or sqlite3 that looks like a source problem and is not.
+        Detaching it means closing your terminal cannot do that.
+      </p>
+    </div>
+
+    <p class="col">
+      Path A needs no LAAVAT account and no signing credentials: the RAUC dev keys are generated
+      locally by <code>make dev-keys</code> (run automatically by the build targets) and marked
+      throwaway, the FIT key is generated by poky on first build, and the HAB dev PKI is fetched
+      from a public repository. Path B swaps the service for <code>scripts/laavat-stub.py</code>. Path C is
+      <code>make qemu-demo</code>, and it is the only one that needs your own LAAVAT service account:
+      its API URL, token files, a product/operation pair and key pin per target - the committed
+      <code>kas/qemu-live.yml</code> holds placeholders for all of them - and a way for the build
+      container to reach the service. Extra container arguments pass through
+      <code>KAS_RUNTIME_ARGS</code>, for example
+      <code>make qemu-demo KAS_RUNTIME_ARGS="--network=host"</code>. <code>RUNBOOK.md</code> has all
+      three written out in full, with the credentials and container-networking details.
+    </p>
+
+    <details>
+      <summary>First-run failures, and what they actually mean <span class="hint">the ones that cost real time</span></summary>
+      <div class="dbody">
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Symptom</th><th>Cause</th></tr></thead>
+            <tbody>
+              <tr><td>Signing task did not run on a rebuild, no error</td><td>Usually correct behaviour, not a failure. <code>do_laavat_sign</code> has no sstate of its own, so when the task that consumes its output (<code>do_deploy</code>, usually) is restored from the cache, the signed bytes come back with it and the signing task is properly skipped. Every signing task reads <code>LAAVAT_SIGN_SKIP</code> in its own shell body, so a cache object built with signing skipped has a different task hash and can never satisfy a signing-on build. Running <code>-c laavat_sign</code> by hand re-signs, and spends an approval, without changing the deploy directory - so it is the wrong reflex on a warm build.</td></tr>
+              <tr><td><code>LAAVAT_TOKEN_FILE must point at a readable token file</code></td><td>The variable is set in your shell but bitbake dropped it. bitbake empties a task's environment and repopulates only what it was told to keep - add it to <code>BB_ENV_PASSTHROUGH_ADDITIONS</code>.</td></tr>
+              <tr><td><code>digest mismatch for &lt;request&gt;</code></td><td>A corrupted or substituted download, not a configuration mistake: the client checks the reported digest against both the raw and the base64 form of what it fetched, so there is no encoding left to set wrong. Nothing was installed. Re-run; if it repeats, look at the request server-side before spending another approval.</td></tr>
+              <tr><td><code>the signing-tool on PATH is too old for this layer</code></td><td>Something overrode the client version down from the layer's own recipe (3.11.0). A parse cannot catch this, because it never runs the tool, so the first signing task checks it and stops. Look for a <code>PREFERRED_VERSION_signing-tool</code> or a higher-priority recipe: <code>bitbake -e signing-tool-native | grep '^PV='</code>. See "which client the classes need" above.</td></tr>
+              <tr><td>Authorization error from the service</td><td>The token expired - they are short-lived. Write a fresh one to the same path and re-run; the pending request is resumed, not duplicated.</td></tr>
+              <tr><td>"undefined reference" in openssl / gdbm / sqlite3</td><td>A previous build was killed mid-compile and truncated its object files. Wipe that tune's work and stamps rather than chasing it recipe by recipe.</td></tr>
+              <tr><td>A <code>.bbappend</code> seems to do nothing</td><td>A bbappend that matches no recipe - a wrong name <em>or</em> a wrong version - is a hard parse error, <code>No recipes in default available for</code>, not a silent no-op. Confirm what actually applied with <code>bitbake-layers show-appends</code>. Do not reach for <code>BB_DANGLINGAPPENDS_WARNONLY</code>: it silences real typos too.</td></tr>
+              <tr><td>Everything rebuilds from scratch</td><td><code>local.conf</code> drift. A <code>DISTRO_FEATURES</code> differing by one word rebuilds every native tool. A new tier must include <code>kas/core.yml</code> verbatim, never hand-copy it.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </details>
+  </section>
+
+  <section id="tiers">
+    <div class="shead"><span class="step">TIERS</span><h2>What changes between dev keys and the service</h2><a class="anchor" href="#tiers">#</a></div>
+    <p class="sub">
+      The same tree builds every tier; the tier <em>is</em> the config you select. That makes the
+      difference between "signed with a key on the build machine" and "signed by the service"
+      small enough to read in full - and <code>make delta</code> prints it from the configs
+      themselves, so it cannot drift from what the build does.
+    </p>
+
+    <figure>
+      <div class="figscroll">
+      <svg viewBox="0 0 880 404" role="img" aria-label="V1 and V2 side by side. The layer list is the same except V2 adds one entry, meta-laavat. The development-key signing configuration is unchanged in V2 and still runs. V2 adds a third block that V1 does not have at all: the service wiring, an API URL, token paths, a CA bundle and a product and operation id per recipe.">
+        <defs>
+          <marker id="f3a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="svg-fill-a" d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+        </defs>
+
+        <text class="svg-t-b" x="24"  y="24">V1 - kas/all.yml</text>
+        <text class="svg-m"   x="24"  y="42">signed with keys on the build machine</text>
+        <text class="svg-t-b" x="480" y="24">V2 - kas/laavat-live.yml</text>
+        <text class="svg-m"   x="480" y="42">V1, plus the service signing alongside</text>
+
+        <rect class="svg-box" x="24" y="58" width="380" height="126" rx="5"></rect>
+        <text class="svg-m"   x="40" y="80">bblayers</text>
+        <text class="svg-m-i" x="40" y="102">poky | meta-oe | meta-arm | meta-rauc | meta-security</text>
+        <text class="svg-m-i" x="40" y="120">meta-freescale | meta-imx | meta-variscite-*</text>
+        <text class="svg-m-i" x="40" y="138">sample-variscite-imx8mm</text>
+        <text class="svg-m"   x="40" y="164">targets: core-image-minimal | sample-variscite-imx8mm-bundle</text>
+
+        <rect class="svg-box" x="480" y="58" width="376" height="126" rx="5"></rect>
+        <text class="svg-m"   x="496" y="80">bblayers</text>
+        <text class="svg-m-i" x="496" y="102">poky | meta-oe | meta-arm | meta-rauc | meta-security</text>
+        <text class="svg-m-i" x="496" y="120">meta-freescale | meta-imx | meta-variscite-*</text>
+        <text class="svg-m-i" x="496" y="138">sample-variscite-imx8mm</text>
+        <rect class="svg-box-a" x="490" y="148" width="150" height="18" rx="3"></rect>
+        <text class="svg-m-a" x="498" y="161">+ meta-laavat</text>
+        <text class="svg-m"   x="652" y="161">one entry</text>
+
+        <rect class="svg-box" x="24" y="198" width="380" height="86" rx="5"></rect>
+        <text class="svg-m"   x="40" y="220">signing with development keys</text>
+        <text class="svg-m-i" x="40" y="242">UBOOT_SIGN_KEYDIR (local.conf) | RAUC_KEY_FILE (recipe)</text>
+        <text class="svg-m"   x="40" y="266">CST_CERTS_URI (BSP) - these make the image you flash</text>
+
+        <rect class="svg-box" x="480" y="198" width="376" height="86" rx="5"></rect>
+        <text class="svg-m"   x="496" y="220">signing with development keys</text>
+        <text class="svg-m-i" x="496" y="242">UBOOT_SIGN_KEYDIR (local.conf) | RAUC_KEY_FILE (recipe)</text>
+        <text class="svg-m"   x="496" y="266">unchanged - still runs, still what you flash</text>
+
+        <rect class="svg-zone" x="24" y="298" width="380" height="86" rx="5"></rect>
+        <text class="svg-m"   x="214" y="346" text-anchor="middle">not present</text>
+
+        <rect class="svg-box-a" x="480" y="298" width="376" height="86" rx="5"></rect>
+        <text class="svg-m-a" x="496" y="320">local.conf - the service wiring, added by V2</text>
+        <text class="svg-m-i" x="496" y="342">LAAVAT_API_URL | LAAVAT_TOKEN_FILE | CA bundle</text>
+        <text class="svg-m-i" x="496" y="364">LAAVAT_PRODUCT_ID / _OPER_ID per recipe</text>
+
+        <line class="svg-line-a" x1="410" y1="121" x2="474" y2="121" marker-end="url(#f3a)"></line>
+        <text class="svg-m" x="442" y="110" text-anchor="middle">+1</text>
+        <line class="svg-line-a" x1="410" y1="241" x2="474" y2="241" marker-end="url(#f3a)"></line>
+        <text class="svg-m" x="442" y="230" text-anchor="middle">same</text>
+        <line class="svg-line-a" x1="410" y1="341" x2="474" y2="341" marker-end="url(#f3a)"></line>
+        <text class="svg-m" x="442" y="330" text-anchor="middle">new</text>
+      </svg>
+      </div>
+      <figcaption>
+        Nothing is taken away: the development keys keep signing exactly as before, and the service
+        results arrive alongside. What that means per artifact is not uniform, though - for the
+        kernel, the trusted applications and the update-bundle keyring the device already trusts only
+        the service, while the boot image is still dev-key signed. The table below has it artifact by
+        artifact.
+      </figcaption>
+    </figure>
+  </section>
+
+  <section id="proof">
+    <div class="shead"><span class="step">WHAT IT PROVES</span><h2>The chain the demo builds</h2><a class="anchor" href="#proof">#</a></div>
+    <p class="sub">
+      <code>make qemu-demo</code> boots the image it just built and reads the answers out of the
+      serial log. This is where the three runtime-verified classes above are checked: for each one the
+      key the <em>device</em> checks against is the service's and nothing else. They are not all
+      checked at the same moment, which is the distinction the diagram draws.
+    </p>
+
+
+    <figure>
+      <div class="figscroll">
+      <svg viewBox="0 0 920 400" role="img" aria-label="Two phases. Boot path: TF-A BL1 and BL2 load BL31, which loads the OP-TEE core as BL32 and U-Boot as BL33; U-Boot verifies the kernel FIT against the SignKernel key in its control device tree before starting Linux. Then, after Linux is up and only on demand: a trusted application is read from the rootfs by tee-supplicant and verified by the OP-TEE core against the anchor compiled into it, and a RAUC bundle is verified against the keyring on the device by rauc info.">
+        <defs>
+          <marker id="f4a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+          </marker>
+          <marker id="f4b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path class="svg-fill-a" d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+        </defs>
+
+        <text class="svg-t-b" x="30" y="18">boot path</text>
+        <text class="svg-m"   x="112" y="18">-- runs in order, every boot</text>
+
+        <rect class="svg-box"   x="30"  y="34" width="140" height="52" rx="4"></rect>
+        <text class="svg-t"     x="100" y="58"  text-anchor="middle">TF-A</text>
+        <text class="svg-m"     x="100" y="74"  text-anchor="middle">BL1 | BL2</text>
+        <line class="svg-line"  x1="170" y1="60" x2="196" y2="60" marker-end="url(#f4a)"></line>
+
+        <rect class="svg-box"   x="200" y="34" width="140" height="52" rx="4"></rect>
+        <text class="svg-t"     x="270" y="58"  text-anchor="middle">BL31</text>
+        <text class="svg-m"     x="270" y="74"  text-anchor="middle">secure monitor</text>
+        <line class="svg-line"  x1="340" y1="60" x2="366" y2="60" marker-end="url(#f4a)"></line>
+
+        <rect class="svg-box-a" x="370" y="34" width="140" height="52" rx="4"></rect>
+        <text class="svg-t"     x="440" y="58"  text-anchor="middle">BL32</text>
+        <text class="svg-m"     x="440" y="74"  text-anchor="middle">OP-TEE core</text>
+        <line class="svg-line"  x1="510" y1="60" x2="536" y2="60" marker-end="url(#f4a)"></line>
+
+        <rect class="svg-box-a" x="540" y="34" width="140" height="52" rx="4"></rect>
+        <text class="svg-t"     x="610" y="58"  text-anchor="middle">BL33</text>
+        <text class="svg-m"     x="610" y="74"  text-anchor="middle">U-Boot</text>
+        <line class="svg-line-a" x1="680" y1="60" x2="706" y2="60" marker-end="url(#f4b)"></line>
+
+        <rect class="svg-box"   x="710" y="34" width="140" height="52" rx="4"></rect>
+        <text class="svg-t"     x="780" y="64"  text-anchor="middle">Linux</text>
+
+        <line class="svg-line-a" x1="610" y1="86" x2="610" y2="102"></line>
+        <text class="svg-m-a" x="610" y="118" text-anchor="middle">verifies the kernel FIT</text>
+        <text class="svg-m"   x="610" y="132" text-anchor="middle">SignKernel key, in</text>
+        <text class="svg-m"   x="610" y="146" text-anchor="middle">U-Boot's control DTB</text>
+
+        <path class="svg-line-a" d="M 400 86 L 400 168 L 590 168 L 590 218" stroke-dasharray="5 4" marker-end="url(#f4b)"></path>
+        <text class="svg-m-a" x="410" y="162">loaded here, carrying its anchor - but it checks nothing yet</text>
+
+        <text class="svg-t-b" x="30"  y="198">after Linux is up</text>
+        <text class="svg-m"   x="168" y="198">-- not in the firmware boot path</text>
+
+        <rect class="svg-zone" x="30" y="208" width="820" height="168" rx="6"></rect>
+
+        <rect class="svg-box"   x="50"  y="226" width="220" height="42" rx="4"></rect>
+        <text class="svg-m-i"   x="60"  y="244">a trusted application</text>
+        <text class="svg-m"     x="60"  y="260">/usr/lib/optee_armtz/*.ta</text>
+        <line class="svg-line"  x1="270" y1="247" x2="296" y2="247" marker-end="url(#f4a)"></line>
+        <rect class="svg-box"   x="300" y="226" width="160" height="42" rx="4"></rect>
+        <text class="svg-m-i"   x="310" y="252">tee-supplicant</text>
+        <line class="svg-line"  x1="460" y1="247" x2="486" y2="247" marker-end="url(#f4a)"></line>
+        <rect class="svg-box-a" x="490" y="226" width="200" height="42" rx="4"></rect>
+        <text class="svg-m-i"   x="500" y="244">OP-TEE core</text>
+        <text class="svg-m-a"   x="500" y="260">the BL32 above</text>
+        <text class="svg-m-a"   x="702" y="244">checks the signature</text>
+        <text class="svg-m"     x="702" y="260">against its anchor</text>
+
+        <rect class="svg-box"   x="50"  y="300" width="220" height="42" rx="4"></rect>
+        <text class="svg-m-i"   x="60"  y="318">an update bundle</text>
+        <text class="svg-m"     x="60"  y="334">*.raucb, when checked</text>
+        <line class="svg-line"  x1="270" y1="321" x2="296" y2="321" marker-end="url(#f4a)"></line>
+        <rect class="svg-box"   x="300" y="300" width="160" height="42" rx="4"></rect>
+        <text class="svg-m-i"   x="310" y="326">rauc info --keyring</text>
+        <line class="svg-line"  x1="460" y1="321" x2="486" y2="321" marker-end="url(#f4a)"></line>
+        <rect class="svg-box-a" x="490" y="300" width="200" height="42" rx="4"></rect>
+        <text class="svg-m-i"   x="500" y="318">device keyring</text>
+        <text class="svg-m-a"   x="500" y="334">/etc/rauc/ca.cert.pem</text>
+        <text class="svg-m-a"   x="702" y="318">checks the chain</text>
+        <text class="svg-m"     x="702" y="334">to the service CA</text>
+
+        <rect class="svg-box-a" x="30" y="386" width="12" height="12" rx="2"></rect>
+        <text class="svg-m" x="50" y="397">teal = checked against a key the service holds; nothing here trusts a key generated on the builder</text>
+      </svg>
+      </div>
+      <figcaption>
+        Only one signature is checked <em>in</em> the boot path: U-Boot verifying the kernel FIT. The
+        other two happen once Linux is running - a trusted application when something asks to load it
+        from the rootfs, and a bundle when <code>rauc</code> checks it. Two of the three anchors are
+        placed during the build: the TA key compiled into the OP-TEE core, and the RAUC keyring written
+        into the rootfs. The FIT key is fetched and pinned during the build too. On real hardware,
+        <code>laavat-fitkey-uboot</code> writes it into the board's own control device tree while the
+        build runs. This emulated machine has no control device tree of its own - it takes one from QEMU
+        at boot - so the harness injects the key there instead, standing in for what a board would do
+        for itself. (Nothing authenticates the
+        boot image itself here - QEMU models no fuses; on i.MX that is HAB's job.)
+      </figcaption>
+    </figure>
+
+    <div class="note">
+      <span class="lbl">who is actually doing the checking</span>
+      <p>
+        Worth being precise about, because "the vendor's test suite says the vendor's product works"
+        is the obvious objection. The verifiers here are <strong>not ours</strong>: U-Boot's own FIT
+        verification, the OP-TEE core's own TA signature check, <code>rauc info</code>, OpenSSL's
+        <code>pkeyutl -verify</code>, and poky's <code>fit_check_sign</code> on the i.MX tier. What
+        this project wrote is the harness that drives them and reads their verdict out of the log -
+        the pass/fail lines are those tools' answers, not ours.
+      </p>
+    </div>
+
+    <div class="note">
+      <span class="lbl">the line that carries the weight</span>
+      <p class="mono" style="font-size:.85rem;margin-bottom:8px">Verifying Hash Integrity ... sha256,rsa2048:laavat+ OK</p>
+      <p style="margin-bottom:0">
+        <code>laavat</code> there is only a key <em>name</em>. What makes it meaningful is which key
+        sits behind it - the certificate in that device tree carries the <code>SignKernel</code>
+        operation's public key, as fetched from the service during the build.
+      </p>
+    </div>
+
+    <details>
+      <summary>What a passing run prints <span class="hint">thirteen assertions, three boots</span></summary>
+      <div class="dbody">
+<pre><span class="c">--- boot 1: the checks ---</span>
+  optee-present          <span class="hl">PASS</span>
+  supplicant             <span class="hl">PASS</span>  241
+  ta-present-signed      <span class="hl">PASS</span>
+  ta-load-signed         <span class="hl">PASS</span>  TEE test application done!
+  ta-reject-foreign      <span class="hl">PASS</span>  refused: TEE test application done!
+  bundle-verify          <span class="hl">PASS</span>  rauc-Message: No data directory or status file
+  bundle-reject-devkey   <span class="hl">PASS</span>  refused: rauc-Message: ...
+  bundle-reject-tampered <span class="hl">PASS</span>  refused: rauc-Message: ...
+  uboot-fit-verified     <span class="hl">PASS</span>     (firmware log)
+  optee-initialised      <span class="hl">PASS</span>     (firmware log)
+
+<span class="c">--- boot 2: the TA tamper, alone in its own boot ---</span>
+  ta-reject-tampered     <span class="hl">PASS</span>  refused: TEE test application done!
+
+<span class="c">--- boot 3: one byte of the kernel flipped ---</span>
+  Verifying Hash Integrity ... sha256 error!
+  Bad hash value for 'hash-1' / Bad Data Hash / ERROR: can't get kernel image!
+  uboot-fit-refused      <span class="hl">PASS</span>     (firmware log)
+  fit-tamper-refused     <span class="hl">PASS</span>     (tampered kernel never reached userspace)</pre>
+        <p style="margin-top:16px">
+          <strong>Why three boots and not one.</strong> The TA tamper needs a boot to itself, for two
+          measured reasons: the corruption must land before anything loads the trusted application,
+          because the core keeps a loaded one resident and would serve that copy; and refusing a
+          corrupted TA sometimes wedges the supplicant, which would block every later check. One boot
+          cannot satisfy both.
+        </p>
+        <p style="margin-bottom:0">
+          Each tamper is deterministic, and each is verified to have actually changed the file
+          before the boot that must refuse it - the TA tamper by <code>cmp</code>, the bundle and
+          kernel tampers by inverting a byte, which cannot silently do nothing. A negative test that
+          quietly corrupts nothing passes for the wrong reason, which is the one way a table of
+          PASS lines can be worthless.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section id="trap">
+    <div class="shead"><span class="step">THE TRAP</span><h2>Deposit beside, or replace</h2><a class="anchor" href="#trap">#</a></div>
+    <p class="sub">
+      This is the mistake worth knowing before you wire anything, because it produces a green build
+      and a signed file and still leaves you with nothing.
+    </p>
+
+    <figure>
+      <div class="figscroll">
+      <svg viewBox="0 0 880 296" role="img" aria-label="Two options. On the left, the signed artifact is deployed beside the original as fitImage.laavat-signed; the bootloader still loads the original dev-key fitImage and the service signature is never checked. On the right, the signed artifact replaces fitImage; the bootloader loads it and verifies it against the service key.">
+        <defs>
+          <marker id="f5a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="svg-fill-d" d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+          <marker id="f5b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="svg-fill-a" d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+        </defs>
+
+        <text class="svg-t-b" x="24" y="24">deposit beside it</text>
+        <text class="svg-m-d" x="24" y="42">looks like it works - it does not</text>
+
+        <rect class="svg-zone" x="24" y="58" width="386" height="130" rx="5"></rect>
+        <text class="svg-m" x="40" y="80">deploy/images/</text>
+        <rect class="svg-box-d" x="40" y="92" width="180" height="34" rx="4"></rect>
+        <text class="svg-m-i"   x="52" y="113">fitImage</text>
+        <text class="svg-m-d"   x="230" y="113">dev key</text>
+        <rect class="svg-box-a" x="40" y="136" width="220" height="34" rx="4"></rect>
+        <text class="svg-m-i"   x="52" y="157">fitImage.laavat-signed</text>
+        <text class="svg-m-a"   x="272" y="157">service</text>
+
+        <rect class="svg-box" x="24" y="212" width="180" height="42" rx="4"></rect>
+        <text class="svg-t"  x="114" y="238" text-anchor="middle">bootloader</text>
+        <path class="svg-line-d" d="M 114 212 L 114 130 L 126 130" marker-end="url(#f5a)"></path>
+        <text class="svg-m-d" x="24" y="278">loads the original | the service signature is never checked</text>
+
+        <line class="svg-zone" x1="440" y1="16" x2="440" y2="280"></line>
+
+        <text class="svg-t-b" x="470" y="24">replace it</text>
+        <text class="svg-m-a" x="470" y="42">the signed artifact IS the artifact</text>
+
+        <rect class="svg-zone" x="470" y="58" width="386" height="130" rx="5"></rect>
+        <text class="svg-m" x="486" y="80">deploy/images/</text>
+        <rect class="svg-box-a" x="486" y="92" width="180" height="34" rx="4"></rect>
+        <text class="svg-m-i"   x="498" y="113">fitImage</text>
+        <text class="svg-m-a"   x="676" y="113">service</text>
+
+        <rect class="svg-box" x="470" y="212" width="180" height="42" rx="4"></rect>
+        <text class="svg-t"  x="560" y="238" text-anchor="middle">bootloader</text>
+        <path class="svg-line-a" d="M 560 212 L 560 130 L 572 130" marker-end="url(#f5b)"></path>
+        <text class="svg-m-a" x="470" y="278">loads it, and verifies it against the service's key</text>
+      </svg>
+      </div>
+      <figcaption>
+        Which shape each class uses is not a matter of taste, and it is the thing to check first when
+        you wire a target. The table below is what the classes actually do.
+      </figcaption>
+    </figure>
+
+    <div class="tablewrap" style="margin-bottom:20px">
+      <table>
+        <thead><tr><th>Artifact</th><th>What the class does</th><th>So the file you ship is</th></tr></thead>
+        <tbody>
+          <tr><td class="nw"><strong>Kernel FIT</strong></td><td><strong>Replaces.</strong> <code>laavat-fitkey</code> writes the signed FIT back over the copy poky installs into the sysroot - the one U-Boot's build-time check and the deploy step both read.</td><td>the only one there is</td></tr>
+          <tr><td class="nw"><strong>Trusted applications</strong></td><td><strong>Replaces.</strong> <code>do_laavat_unpack</code> writes each signed <code>.ta</code> over its build-tree original before the unmodified <code>do_install</code> packages whatever is on disk.</td><td>the only one there is</td></tr>
+          <tr><td class="nw"><strong>Boot image</strong> (HAB, AHAB, bootgen)</td><td><strong>Deposits beside.</strong> The signed image lands in the deploy directory as <code>&lt;name&gt;.laavat-signed</code>, next to the one your BSP's own signing produced.</td><td><strong>yours to choose</strong> - the <code>.laavat-signed</code> file, and your image recipe has to pick it up</td></tr>
+          <tr><td class="nw"><strong>Update bundle</strong></td><td><strong>Deposits beside.</strong> Same shape: <code>&lt;bundle&gt;.raucb.laavat-signed</code> beside the dev-key bundle <code>do_bundle</code> built.</td><td><strong>yours to choose</strong> - deploy the <code>.laavat-signed</code> one; a device with the service CA refuses the other</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="col">
+      Two replace and two deposit beside, so for half the targets the last step is yours. That is
+      deliberate - a boot image and an update bundle are things you flash and publish, and the layer
+      does not overwrite them behind your back - but it means "the build went green" is not the same
+      as "the signed artifact is the one that ships." The demo proves the device refuses the wrong
+      bundle; nothing can prove you deployed the right one but you.
+    </p>
+  </section>
+
+  <section id="dev-keys">
+    <div class="shead"><span class="step">THE DEV KEYS</span><h2>So what happens to the R&amp;D keys?</h2><a class="anchor" href="#dev-keys">#</a></div>
+    <p class="sub">
+      The obvious question once you know the service signing is additive. The answer is per artifact,
+      and three of the four already trust the service and nothing else - "sidecar" describes where a
+      <em>file</em> lands, not necessarily what the device trusts.
+    </p>
+
+    <div class="tablewrap" style="margin-bottom:20px">
+      <table>
+        <thead><tr><th>Artifact</th><th>Dev key on the i.MX tier today</th><th>To finish the job</th></tr></thead>
+        <tbody>
+          <tr>
+            <td class="nw"><strong>Trusted apps</strong></td>
+            <td><strong>Already gone.</strong> optee-os signs each <code>.ta</code> with its in-tree throwaway during the build, and <code>do_laavat_unpack</code> overwrites every one of them with the service-signed copy before packaging. The key the core embeds as its anchor is the service's, pinned by digest.</td>
+            <td>Nothing - this one is done.</td>
+          </tr>
+          <tr>
+            <td class="nw"><strong>Update bundle</strong></td>
+            <td><strong>Anchor already switched.</strong> The dev key still signs a bundle during the build - that is RAUC's own recommended shape, sign cheaply then re-sign - but the device keyring installed into <code>/etc/rauc/ca.cert.pem</code> is the <em>service's</em> issuing CA, pinned by digest. A dev-key bundle would be refused on the device.</td>
+            <td>Deploy the <code>.laavat-signed</code> bundle, not the one beside it. The demo proves the device refuses the wrong one.</td>
+          </tr>
+          <tr>
+            <td class="nw"><strong>Kernel</strong></td>
+            <td><strong>Anchor already switched.</strong> <code>laavat-fitkey</code> signs <code>fitImage-none</code> in place - the copy poky installs into the sysroot and U-Boot verifies - and <code>laavat-fitkey-uboot</code> puts the service's key into the control device tree this board appends.</td>
+            <td>Nothing - this one is done.</td>
+          </tr>
+          <tr>
+            <td class="nw"><strong>Boot image</strong></td>
+            <td><strong>Dev PKI, and it is a <em>public</em> one</strong> - <code>var-hab-certs</code>, which anyone can download and sign with. On this tier the boot image's signature exercises the mechanism; the security comes from the two steps beside this one.</td>
+            <td>Point <code>CST_CERTS_URI</code> at your own PKI, and ultimately fuse your SRK hash into the chip. That last step is irreversible per device, which is exactly why the test-bed does not do it.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <span class="lbl">for your own build</span>
+      <p style="margin-bottom:0">
+        None of the keys this repo uses should survive into a product. The RAUC dev CA and its
+        signer are not committed: <code>make dev-keys</code> (<code>scripts/gen-dev-keys.sh</code>,
+        run automatically by the build targets) generates them on first use as self-signed
+        throwaways whose common name reads <code>DO NOT USE IN PRODUCTION</code>, and they are
+        gitignored. That is what lets anyone build the "before" tier without credentials. The
+        <code>service-ca.pem</code> every tier installs as the device's update root of trust is a
+        committed <em>placeholder</em> in <code>testbed-fixtures/files/dev-keys/</code>, pinned by
+        digest so the build passes. In your build, replace that file and its pin together with your
+        service's issuing CA, replace the dev keys with your PKI, and let the service hold every key
+        that matters.
+      </p>
+    </div>
+  </section>
+
+  <section id="split">
+    <div class="shead"><span class="step">YOUR TURN</span><h2>Where your code goes</h2><a class="anchor" href="#split">#</a></div>
+    <p class="sub">
+      When you move this to your own board, the split below is the thing to understand:
+      <code>meta-laavat</code> knows about signing and nothing about machines. Every "which file,
+      which recipe, which product id" decision lives in a glue layer you own.
+    </p>
+
+    <figure>
+      <div class="figscroll">
+      <svg viewBox="0 0 880 320" role="img" aria-label="Three layers side by side. poky and your BSP stay unchanged. meta-laavat ships the signing classes and knows no machine. Your glue layer is the part you write: it bbappends a recipe you do not own and inherits the signing class.">
+        <defs>
+          <marker id="f6a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="svg-fill-a" d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+        </defs>
+
+        <rect class="svg-box" x="24" y="86" width="250" height="176" rx="5"></rect>
+        <text class="svg-t-b" x="44" y="112">poky + your BSP</text>
+        <text class="svg-m"   x="44" y="130">unchanged - you own this already</text>
+        <text class="svg-m"   x="44" y="162">linux-&lt;yours&gt;</text>
+        <text class="svg-m"   x="44" y="182">u-boot-&lt;yours&gt;</text>
+        <text class="svg-m"   x="44" y="202">imx-boot / boot image</text>
+        <text class="svg-m"   x="44" y="222">your image recipe</text>
+
+        <rect class="svg-box-a" x="314" y="86" width="250" height="176" rx="5"></rect>
+        <text class="svg-t-b" x="334" y="112">meta-laavat</text>
+        <text class="svg-m"   x="334" y="130">we ship it - knows no machine</text>
+        <text class="svg-m"   x="334" y="162">laavat-sign, the engine</text>
+        <text class="svg-m"   x="334" y="182">one class per target: hab, ahab, bootgen,</text>
+        <text class="svg-m"   x="334" y="202">fitkey[-uboot], fitimage, rauc[-keyring], optee</text>
+        <text class="svg-m"   x="334" y="222">signing-tool recipe</text>
+
+        <rect class="svg-box" x="604" y="86" width="250" height="176" rx="5"></rect>
+        <text class="svg-t-b" x="624" y="112">your glue layer</text>
+        <text class="svg-m"   x="624" y="130">the part you write</text>
+        <text class="svg-m"   x="624" y="162">linux-&lt;yours&gt;_%.bbappend</text>
+        <text class="svg-m"   x="624" y="182">which product / operation</text>
+        <text class="svg-m"   x="624" y="202">which file goes up</text>
+        <text class="svg-m"   x="624" y="222">where the signed one lands</text>
+
+        <path class="svg-line-a" d="M 700 86 C 700 30 260 30 232 82" marker-end="url(#f6a)"></path>
+        <text class="svg-m-a" x="466" y="34" text-anchor="middle">bbappend - adds to a recipe you do not own</text>
+
+        <line class="svg-line-a" x1="600" y1="174" x2="570" y2="174" marker-end="url(#f6a)"></line>
+        <text class="svg-m-a" x="585" y="164" text-anchor="middle">inherits</text>
+
+        <text class="svg-m" x="24" y="296">Adding meta-laavat to bblayers changes nothing at all until one of your recipes inherits the class --</text>
+        <text class="svg-m" x="24" y="312">which is what makes it safe to drop into a BSP that already works.</text>
+      </svg>
+      </div>
+      <figcaption>
+        Every customer arrives with a different BSP and a different set of things worth signing.
+        Keeping machine knowledge out of <code>meta-laavat</code> is what lets one layer serve all of
+        them; the glue layer absorbs the variation. In this repo that is the ten <code>sample-*</code>
+        layers, one per board - the part you replace with yours.
+      </figcaption>
+    </figure>
+
+    <details>
+      <summary>What one wired target actually looks like <span class="hint">one line for most, two halves for the kernel</span></summary>
+      <div class="dbody">
+        <h3 style="margin-bottom:8px">Most targets: one inherit</h3>
+        <p>
+          A class per target carries the mechanism - which file to pick up, how to package the
+          request, where the result lands. The RAUC bundle is <code>laavat-rauc</code> on the bundle
+          recipe with <code>laavat-rauc-keyring</code> and a CA pin on the recipe that owns
+          <code>/etc/rauc</code>; trusted applications are <code>laavat-optee</code> on
+          <code>optee-os</code>; a HAB, AHAB or Xilinx boot image is <code>laavat-hab</code>,
+          <code>laavat-ahab</code> or <code>laavat-bootgen</code> on the recipe that builds it. Verbatim
+          examples are under <a href="#light">how light it is</a>. The ids go in your configuration:
+        </p>
+<pre>LAAVAT_PRODUCT_ID:pn-optee-os    = <span class="c">"&lt;product-uuid&gt;"</span>
+LAAVAT_OPER_ID:pn-optee-os       = <span class="c">"&lt;operation-uuid&gt;"</span>
+LAAVAT_PUBKEY_SHA256:pn-optee-os = <span class="c">"&lt;sha256 of the DER SubjectPublicKeyInfo&gt;"</span>   <span class="c"># the TA anchor, pinned</span></pre>
+
+        <h3 style="margin-top:22px;margin-bottom:8px">An operation with no class yet</h3>
+        <p>
+          The engine is still there for it. Say which file goes up, which operation signs it, and
+          where the result lands - then put the task in the recipe's graph:
+        </p>
+<pre><span class="hl">inherit</span> laavat-sign
+
+LAAVAT_SIGN_OPERATION = <span class="c">"SignUBoot"</span>
+LAAVAT_SIGN_INPUT  = <span class="c">"${B}/u-boot.imx"</span>
+LAAVAT_SIGN_OUTPUT = <span class="c">"${WORKDIR}/laavat/u-boot.imx.signed"</span>
+
+<span class="hl">addtask</span> laavat_sign after do_compile before do_deploy
+
+do_deploy:append() {
+    <span class="c"># replace, don't deposit beside - see "the trap" above</span>
+    install -m 0644 ${LAAVAT_SIGN_OUTPUT} ${DEPLOYDIR}/u-boot.imx
+}</pre>
+
+        <h3 style="margin-top:22px;margin-bottom:8px">The kernel, which needs both halves</h3>
+        <div class="note warn" style="margin-bottom:16px">
+          <span class="lbl">do not use the shape above for the FIT</span>
+          <p style="margin-bottom:0">
+            Signing the kernel FIT and stopping there is <em>half</em> a chain of trust. U-Boot verifies
+            the kernel against whatever public key sits in its control device tree - and while that is
+            still your build's own key, the service's signature is never checked and the boot is
+            anchored to nothing. Worse, U-Boot verifies a copy in its own sysroot, not the deployed
+            file, so replacing only the deployed <code>fitImage</code> leaves it checking a placeholder
+            signature: invisible under QEMU, a build failure on a real board.
+          </p>
+        </div>
+        <p>Two dedicated classes do both halves through machinery poky already has. On your kernel recipe:</p>
+<pre><span class="hl">inherit</span> laavat-fitkey      <span class="c"># Yocto 5.2 and earlier. On 5.3+ the FIT has its own recipe: inherit laavat-fitimage on linux-yocto-fitimage</span></pre>
+        <p>and on your u-boot recipe, on every release:</p>
+<pre><span class="hl">inherit</span> laavat-fitkey-uboot</pre>
+        <p>then, in your configuration:</p>
+<pre>LAAVAT_PRODUCT_ID:pn-linux-&lt;yours&gt; = <span class="c">"..."</span>
+LAAVAT_OPER_ID:pn-linux-&lt;yours&gt;    = <span class="c">"..."</span>
+<span class="c"># not per-recipe: both halves read it, and the u-boot recipe cannot see a :pn-&lt;kernel&gt; override</span>
+LAAVAT_FIT_PUBKEY_SHA256 = <span class="c">"&lt;sha256 of the DER SubjectPublicKeyInfo&gt;"</span>
+
+<span class="c"># the signed FIT is read from and written into the kernel's workdir, and the u-boot half</span>
+<span class="c"># reads it from there too; rm_work would delete it while the stamps still say it is done</span>
+RM_WORK_EXCLUDE += <span class="c">"linux-&lt;yours&gt;"</span></pre>
+        <p style="margin-bottom:0">
+          The kernel half signs the FIT with <code>SignKernel</code> and writes the service's
+          certificate where poky already looks for a FIT signing key; the u-boot half injects that key
+          into the control device tree instead of re-signing with a key the service does not hold. Both
+          are required, and the class turns poky's "verified boot won't be available" warning into
+          an error - a green build with an unverified kernel is the exact failure this layer exists to
+          prevent. Needs <code>kernel-fitimage</code> in <code>KERNEL_CLASSES</code> and
+          <code>UBOOT_SIGN_ENABLE = "1"</code>; both are checked at parse time, and on Yocto 5.3 or
+          later <code>laavat-fitkey</code> stops the parse and names its replacement.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section id="without-kas">
+    <div class="shead"><span class="step">WITHOUT KAS</span><h2>Getting the layer into <em>your</em> build</h2><a class="anchor" href="#without-kas">#</a></div>
+    <p class="sub">
+      Everything above uses kas because this test-bed does. Nothing about <code>meta-laavat</code>
+      requires it. The layer is an ordinary Yocto layer, and whatever you use to assemble a build -
+      hand-written <code>bblayers.conf</code>, <code>repo</code> manifests, submodules, your own
+      CI image - ends at the same three facts.
+    </p>
+
+    <figure>
+      <div class="figscroll">
+      <svg viewBox="0 0 880 320" role="img" aria-label="Four different ways of vendoring a layer - bitbake-layers add-layer, a kas repo entry, a repo manifest or git submodule, and a container image bind mount - all converge on one thing: the layer path appearing in BBLAYERS in the build configuration, which is what bitbake parses. Separately, the LAAVAT configuration variables enter from local.conf, a distro or machine conf, or a bbappend.">
+        <defs>
+          <marker id="f7a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M 0 0 L 10 5 L 0 10 z" fill="currentColor"></path>
+          </marker>
+          <marker id="f7b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path class="svg-fill-a" d="M 0 0 L 10 5 L 0 10 z"></path>
+          </marker>
+        </defs>
+
+        <text class="svg-m" x="24" y="20">however you vendor layers today</text>
+
+        <rect class="svg-box" x="24" y="32" width="250" height="34" rx="4"></rect>
+        <text class="svg-m-i" x="36" y="53">bitbake-layers add-layer</text>
+        <rect class="svg-box" x="24" y="76" width="250" height="34" rx="4"></rect>
+        <text class="svg-m-i" x="36" y="97">kas: a repos: entry</text>
+        <rect class="svg-box" x="24" y="120" width="250" height="34" rx="4"></rect>
+        <text class="svg-m-i" x="36" y="141">repo manifest / submodule</text>
+        <rect class="svg-box" x="24" y="164" width="250" height="34" rx="4"></rect>
+        <text class="svg-m-i" x="36" y="185">bind mount in a CI image</text>
+
+        <path class="svg-line" d="M 274 49  L 310 49  L 310 115" fill="none"></path>
+        <path class="svg-line" d="M 274 93  L 310 93"  fill="none"></path>
+        <path class="svg-line" d="M 274 137 L 310 137" fill="none"></path>
+        <path class="svg-line" d="M 274 181 L 310 181 L 310 115" fill="none"></path>
+        <line class="svg-line" x1="310" y1="115" x2="352" y2="115" marker-end="url(#f7a)"></line>
+
+        <rect class="svg-box-a" x="356" y="88" width="240" height="56" rx="4"></rect>
+        <text class="svg-t"   x="476" y="110" text-anchor="middle">BBLAYERS</text>
+        <text class="svg-m-a" x="476" y="130" text-anchor="middle">the layer path is listed here</text>
+
+        <line class="svg-line-a" x1="596" y1="116" x2="636" y2="116" marker-end="url(#f7b)"></line>
+        <rect class="svg-box" x="640" y="88" width="216" height="56" rx="4"></rect>
+        <text class="svg-t"  x="748" y="110" text-anchor="middle">bitbake parses it</text>
+        <text class="svg-m"  x="748" y="130" text-anchor="middle">and does nothing else</text>
+
+        <rect class="svg-zone" x="24" y="216" width="832" height="86" rx="6"></rect>
+        <text class="svg-m" x="40" y="238">the configuration values enter separately - wherever you already set variables</text>
+        <text class="svg-m-i" x="40"  y="264">local.conf</text>
+        <text class="svg-m-i" x="150" y="264">your distro .conf</text>
+        <text class="svg-m-i" x="300" y="264">a machine .conf</text>
+        <text class="svg-m-i" x="440" y="264">a .bbappend</text>
+        <text class="svg-m-i" x="570" y="264">a kas local_conf_header</text>
+        <text class="svg-m" x="40" y="288">LAAVAT_API_URL | LAAVAT_TOKEN_FILE | LAAVAT_PRODUCT_ID:pn-&lt;recipe&gt; | LAAVAT_OPER_ID:pn-&lt;recipe&gt;</text>
+      </svg>
+      </div>
+      <figcaption>
+        The layer carries <strong>no <code>.bbappend</code> of its own</strong>. It adds two recipes
+        (<code>signing-tool</code> and <code>python3-jwcrypto</code>) and ten classes plus two shared helpers, and modifies no
+        recipe anyone else owns - so listing it in <code>BBLAYERS</code> is genuinely inert until one of
+        <em>your</em> recipes inherits a class.
+      </figcaption>
+    </figure>
+
+    <details>
+      <summary>The three requirements, and how to satisfy them in any tooling <span class="hint">no kas needed</span></summary>
+      <div class="dbody">
+        <h3 style="margin-bottom:8px">1 | The layer is on disk somewhere bitbake can read</h3>
+        <p>
+          Vendor it however you vendor layers. It has no submodules and no build step of its own; a
+          directory is enough. It is public at
+          <a href="https://github.com/laavat/meta-laavat">github.com/laavat/meta-laavat</a>: clone it
+          at a release tag wherever your other layers live, the way <code>make fetch-laavat</code>
+          does here.
+        </p>
+
+        <h3 style="margin-bottom:8px">2 | Its path is in <code>BBLAYERS</code></h3>
+        <p>Plain OE, from an initialised build directory:</p>
+<pre>. oe-init-build-env
+bitbake-layers add-layer /path/to/meta-laavat
+bitbake-layers show-layers        <span class="c"># 'laavat' should now appear</span></pre>
+        <p>
+          or add the path to <code>BBLAYERS</code> in <code>build/conf/bblayers.conf</code> by hand -
+          that is all <code>add-layer</code> does. With kas it is a <code>repos:</code> entry; with
+          <code>repo</code> or submodules you place it and then add the path the same way.
+        </p>
+
+        <h3 style="margin-bottom:8px">3 | Its dependencies are present, on a series it supports</h3>
+        <p>The layer declares exactly this, and bitbake enforces it at parse time:</p>
+<pre>LAYERDEPENDS_laavat       = <span class="c">"core meta-python"</span>
+LAYERSERIES_COMPAT_laavat = <span class="c">"scarthgap styhead walnascar whinlatter wrynose"</span>
+BBFILE_PRIORITY_laavat    = <span class="c">"6"</span>
+LAYERVERSION_laavat       = <span class="c">"3"</span></pre>
+        <p style="margin-bottom:0">
+          <code>core</code> is poky's <code>meta</code>; <code>meta-python</code> comes from
+          meta-openembedded and supplies the client's Python dependencies. On a series that is not
+          listed, bitbake refuses to parse and names <code>LAYERSERIES_COMPAT</code> in the error - it
+          fails loudly rather than subtly. There is no <code>addpylib</code>: the layer ships no Python
+          for bitbake's workers to import. <code>LAYERVERSION</code> is bumped when a change here needs
+          a matching change in a layer that inherits these classes.
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Where to put the configuration values <span class="hint">and the per-recipe override form</span></summary>
+      <div class="dbody">
+        <p>
+          The <code>LAAVAT_*</code> variables are ordinary bitbake variables. Put them wherever your
+          project already puts configuration - <code>local.conf</code>, your own distro or machine
+          <code>.conf</code>, a <code>.bbappend</code>, or a kas <code>local_conf_header</code>. The
+          layer does not care which.
+        </p>
+        <p>
+          Site-wide values (the API URL, the token paths, the CA bundle) are set once. The ids differ
+          per artifact, so those take the <code>:pn-</code> override form, which targets one recipe:
+        </p>
+<pre>LAAVAT_API_URL    = <span class="c">"https://signing.example.com/api/v1"</span>
+LAAVAT_TOKEN_FILE = <span class="c">"/secure/path/token.jwt"</span>     <span class="c"># a path, never a token</span>
+
+LAAVAT_PRODUCT_ID:pn-linux-yourbsp = <span class="c">"..."</span>
+LAAVAT_OPER_ID:pn-linux-yourbsp    = <span class="c">"..."</span>
+LAAVAT_PRODUCT_ID:pn-u-boot-yourbsp = <span class="c">"..."</span></pre>
+        <p>
+          If you export the token path from your shell instead, bitbake must be told to keep it -
+          it empties a task's environment and repopulates only what it was told to preserve:
+        </p>
+<pre>export LAAVAT_TOKEN_FILE=~/.laavat-token
+export BB_ENV_PASSTHROUGH_ADDITIONS=<span class="c">"$BB_ENV_PASSTHROUGH_ADDITIONS LAAVAT_TOKEN_FILE LAAVAT_APPROVER_TOKEN_FILE"</span></pre>
+        <p style="margin-bottom:0">
+          <strong>One kas-specific ordering trap</strong>, if you do use kas: it emits
+          <code>local_conf_header</code> sections in <em>alphabetical key order</em>, so a section whose
+          key sorts later wins on plain assignments. Name your section accordingly, or use
+          <code>:pn-</code> overrides, which win regardless of order.
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Proving it landed, before you wire anything <span class="hint">three checks that cost seconds</span></summary>
+      <div class="dbody">
+<pre><span class="c"># 1. the layer is in the build</span>
+bitbake-layers show-layers | grep laavat
+
+<span class="c"># 2. the client recipe resolves, at the version the classes require</span>
+bitbake -e signing-tool-native | grep <span class="c">'^PV='</span>        <span class="c"># 3.11.0, from the layer's recipe, unless you chose another</span>
+
+<span class="c"># 3. your recipe sees the values you set</span>
+bitbake -e &lt;your-recipe&gt; | grep <span class="c">'^LAAVAT_'</span></pre>
+        <p>
+          Check 3 is the one that catches most mistakes: a <code>:pn-</code> override on the wrong
+          recipe name, a value shadowed by ordering, or a variable that never reached bitbake at all.
+        </p>
+        <p style="margin-bottom:0">
+          And the negative control, which is the reassuring one: on a build where no recipe inherits a
+          laavat class, <code>bitbake -e &lt;recipe&gt;</code> shows <em>zero</em>
+          <code>LAAVAT_*</code> variables and no <code>do_laavat_*</code> task. Adding the layer to a
+          working BSP cannot change its output until you ask it to.
+        </p>
+      </div>
+    </details>
+
+    <div class="note" style="margin-top:6px">
+      <span class="lbl">the one thing that is not optional</span>
+      <p style="margin-bottom:0">
+        Signing happens <em>during</em> the build, so the machine running bitbake needs egress to the
+        API and to the storage URLs it hands back. <code>BB_NO_NETWORK</code> does not stop it - that
+        only gates the fetcher - so treat "offline builds do not sign" as a policy you enforce, not
+        something the layer enforces for you.
+      </p>
+    </div>
+  </section>
+
+  <section id="vocabulary">
+    <div class="shead"><h2>Vocabulary</h2><a class="anchor" href="#vocabulary">#</a></div>
+    <p class="sub">Terms this repo will throw at you, shortest useful definition first.</p>
+    <details>
+      <summary>Yocto and build-system terms <span class="hint">layer, recipe, bbappend, sstate, kas</span></summary>
+      <div class="dbody">
+        <dl class="gloss">
+          <div><dt>layer</dt><dd>A directory of recipes and configuration bitbake includes. Adding one changes nothing until something uses it.</dd></div>
+          <div><dt>recipe / .bb</dt><dd>Instructions to fetch, build and package one component.</dd></div>
+          <div><dt>bbappend</dt><dd>A file that adds to a recipe someone else owns, without editing it. How signing gets attached to a vendor's kernel.</dd></div>
+          <div><dt>class / .bbclass</dt><dd>Reusable recipe logic. A recipe <code>inherit</code>s one to gain its tasks and variables.</dd></div>
+          <div><dt>task</dt><dd>One step in a recipe's build, like <code>do_compile</code>. Signing adds one of its own.</dd></div>
+          <div><dt>sstate / setscene</dt><dd>bitbake's cache of finished task output. A setscene "hit" restores a result instead of rebuilding - and can skip a task that a cached one covers, which is why signing tasks are run by name.</dd></div>
+          <div><dt>kas</dt><dd>Describes a whole build - layers, commits, machine, local.conf - in one composable YAML file.</dd></div>
+          <div><dt>kas-container</dt><dd>Runs kas inside a container that already has a build host in it, so yours needs almost nothing.</dd></div>
+          <div><dt>machine</dt><dd>The board a build targets. Here: ten of them, from <code>imx8mm-var-dart</code> to <code>zynqmp-generic</code>; <code>qemuarm64-secureboot</code> is the one that boots.</dd></div>
+          <div><dt>deploy dir</dt><dd><code>build/tmp/deploy/images/&lt;machine&gt;/</code> - where finished, flashable artifacts land.</dd></div>
+        </dl>
+      </div>
+    </details>
+    <details>
+      <summary>Secure-boot and signing terms <span class="hint">FIT, HAB, TA, RAUC, dm-verity</span></summary>
+      <div class="dbody">
+        <dl class="gloss">
+          <div><dt>FIT image</dt><dd>Flattened Image Tree: kernel, device trees and signatures in one file U-Boot can verify before booting.</dd></div>
+          <div><dt>control DTB</dt><dd>U-Boot's own device tree. The public key it verifies the FIT against lives here - which is why placing that key is half the job.</dd></div>
+          <div><dt>HAB</dt><dd>i.MX High Assurance Boot: the boot ROM checks each stage's signature against a hash fused into the chip.</dd></div>
+          <div><dt>IVT / CSF</dt><dd>The header at the start of each i.MX boot stage, and the block holding the signature the ROM checks.</dd></div>
+          <div><dt>SRK</dt><dd>Super Root Key. Its hash is burned into chip fuses and anchors the whole HAB chain - irreversibly, which is why fusing is not done here.</dd></div>
+          <div><dt>TF-A / BL31 / BL33</dt><dd>Arm Trusted Firmware and its boot stages: the secure monitor, and the normal-world bootloader it hands off to.</dd></div>
+          <div><dt>OP-TEE / TA</dt><dd>A trusted execution environment running beside Linux, and the Trusted Applications it loads - each verified against a key compiled into its core.</dd></div>
+          <div><dt>RAUC</dt><dd>An A/B update framework. A <code>.raucb</code> bundle is signed, and the device verifies it against a keyring before installing.</dd></div>
+          <div><dt>dm-verity</dt><dd>Block-level integrity for the root filesystem; its root hash sits inside the signed FIT.</dd></div>
+          <div><dt>HSM</dt><dd>Hardware security module. Holds private keys - the service generates its signing keys there as non-exportable - and performs signatures inside itself.</dd></div>
+          <div><dt>product / operation</dt><dd>The LAAVAT service's two identifiers. A product groups operations; an operation is one signing capability with one key behind it.</dd></div>
+          <div><dt>four-eyes approval</dt><dd>A signing request must be approved by someone other than the requester before the service will sign.</dd></div>
+        </dl>
+      </div>
+    </details>
+  </section>
+
+  <section id="operations">
+    <div class="shead"><span class="step">OPERATIONS</span><h2>The questions a risk review asks</h2><a class="anchor" href="#operations">#</a></div>
+    <p class="sub">
+      Moving signing into a service moves a dependency into your build. These are the consequences
+      worth knowing before you commit to it, including the ones your own deployment decides.
+    </p>
+
+    <details>
+      <summary>What happens when the service is unreachable mid-build <span class="hint">answered from the code</span></summary>
+      <div class="dbody">
+        <p>
+          The build fails - there is no unsigned fallback, by design. What matters is whether it fails
+          <em>recoverably</em>, and the resume state is what decides that. It is written as soon as the
+          service returns a request id, lives outside the recipe's work directory, and is deleted in
+          exactly one case: the service terminally rejects the request.
+        </p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Failure</th><th>What a re-run does</th></tr></thead>
+            <tbody>
+              <tr><td class="nw">Unreachable during upload</td><td>No request was created and no state written. The re-run submits cleanly - there is no orphan to clean up.</td></tr>
+              <tr><td class="nw">Unreachable during download</td><td>State survives, so the re-run prints <code>resuming signing request &lt;id&gt;</code> and picks up the same request. Approval is not spent twice.</td></tr>
+              <tr><td class="nw">Token expired mid-run</td><td>Same as above - write a fresh token to the same path and re-run; the request is resumed, not duplicated.</td></tr>
+              <tr><td class="nw">Approval timed out</td><td>The request is still alive. Approve it and re-run.</td></tr>
+              <tr><td class="nw">Service rejected it</td><td>State is cleared. The re-run starts a new request, which is the right behaviour for a rejection.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:16px;margin-bottom:0">
+          One edge case the client handles explicitly rather than silently: if the request is created but
+          its state file cannot be written, the error names the request id, so a request that would
+          otherwise be stranded is recoverable by hand.
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Air-gapped builds <span class="hint">there is no offline mode</span></summary>
+      <div class="dbody">
+        <p style="margin-bottom:0">
+          Signing happens during the build, over the network, and there is <strong>no offline or batch
+          path</strong> today, so build hosts with no egress are not supported. If that is your
+          environment, it is a product conversation rather than a configuration one. Be aware too
+          that <code>BB_NO_NETWORK</code> will not stop a signing task - it gates
+          the fetcher, not a task's own subprocess - so "offline builds do not sign" is a policy you
+          enforce, not something the layer enforces for you.
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Key rotation, revocation and old builds <span class="hint">what the layer pins, and what your PKI owns</span></summary>
+      <div class="dbody">
+        <p>
+          <strong>Rotation is fail-closed, deliberately.</strong> Every verification key this layer
+          embeds is pinned by the SHA-256 of its DER SubjectPublicKeyInfo, so a rotated key does not
+          quietly become the new anchor of everything you ship - the fetch fails and the build stops
+          until someone updates the pin on purpose. That is the whole reason the pin is mandatory and
+          has no default.
+        </p>
+        <p>
+          <strong>Revocation of a boot-ROM root key is the silicon's mechanism, not ours.</strong> On
+          i.MX that is HAB's SRK revocation via fuses; nothing in this layer changes or can change it.
+        </p>
+        <p style="margin-bottom:0">
+          <strong>Three questions belong to your deployment rather than to this layer</strong>, and
+          are worth putting to whoever operates your LAAVAT service, because the answers are specific
+          to it: reproducing a signature years later, how long product and operation ids stay stable,
+          and what happens to already-shipped devices if a production key is compromised.
+        </p>
+      </div>
+    </details>
+
+    <details>
+      <summary>Tokens in CI, and distribution <span class="hint">what to plan around</span></summary>
+      <div class="dbody">
+        <p>
+          <strong>Tokens are short-lived and the lifetime is set by your deployment</strong>, not by this
+          layer - so treat a token as per-run credential material: mint one at the start of a pipeline
+          job and write it to the path <code>LAAVAT_TOKEN_FILE</code> names. A long-running job that
+          outlives its token gets an authorization error, and the recovery is a fresh token plus a
+          re-run, which resumes rather than duplicates. The layer only ever reads the file, so refreshing
+          it in place works.
+        </p>
+        <p style="margin-bottom:0">
+          <strong>The layer is public</strong>, at
+          <a href="https://github.com/laavat/meta-laavat">github.com/laavat/meta-laavat</a>, in
+          tagged releases; pin one, as <code>make fetch-laavat</code> does with <code>LAAVAT_REF</code>.
+          It is plain Yocto with no binary blobs, so it is auditable in full. Its network use is
+          specific and worth listing for a firewall review: the client recipe fetches
+          <code>signing-tool</code> and its dependencies from PyPI like any other source fetch; the
+          signing tasks call the service's API (fetching public keys to check against their pins,
+          and opening, polling and downloading signing requests); and they upload and download the
+          artifacts themselves through the storage URLs the service hands back. The client is a
+          separately released component - <code>signing-tool</code>, public on PyPI - so the half of
+          this that talks to the service is versioned and auditable on its own. For anything else,
+          contact Laavat at <a href="mailto:contact@laavat.com">contact@laavat.com</a> or
+          <a href="https://www.laavat.io/contact">laavat.io/contact</a>.
+        </p>
+      </div>
+    </details>
+  </section>
+
+  <section id="next">
+    <div class="shead"><h2>Where to go next</h2><a class="anchor" href="#next">#</a></div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Document</th><th>Answers</th></tr></thead>
+        <tbody>
+          <tr><td class="nw"><code>RUNBOOK.md</code></td><td>How do I run it? All three paths in order, credentials, container networking, and every trap that has cost real time.</td></tr>
+          <tr><td class="nw"><code>DEMO.md</code></td><td>What does each tier prove? The V0 / V1 / V2 / QEMU tiers and the claim behind each check.</td></tr>
+          <tr><td class="nw"><code>README.md</code></td><td>Why is it built this way? Per-target wiring, design decisions, and the boundaries each one draws.</td></tr>
+          <tr><td class="nw"><a href="https://github.com/laavat/meta-laavat/blob/main/docs/INTEGRATION.md"><code>meta-laavat/docs/INTEGRATION.md</code></a></td><td>How do I add signing to <em>my</em> build? A ten-section walkthrough with a success check per step.</td></tr>
+          <tr><td class="nw"><a href="https://github.com/laavat/meta-laavat/blob/main/README.md"><code>meta-laavat/README.md</code></a></td><td>Reference: every class and variable, and the exact verification rules.</td></tr>
+          <tr><td class="nw"><code>docs/integration-matrix.md</code>, <code>docs/yocto-matrix.md</code></td><td>Which boards and which Yocto releases, what each one costs to wire, and the traps each sets.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note" style="margin-top:22px">
+      <span class="lbl">what the runtime proof covers</span>
+      <p style="margin-bottom:0">
+        It runs on <code>qemuarm64-secureboot</code>, an emulated machine, and what it demonstrates
+        is that the glue, the anchors and the formats verify at runtime against the service's keys.
+        The boot-ROM half of the chain is the part it cannot reach: an emulator models no fuses, so
+        HAB, AHAB and the Xilinx CSU can only be exercised on silicon. Bringing that half up on your
+        own board is real work, and it belongs in your plan.
+      </p>
+    </div>
+  </section>
+
+  <footer class="end">
+    <span>meta-laavat | Laavat Oy</span>
+    <span>Built on scarthgap (5.0 LTS); 5.1, 5.2, 5.3 and 6.0 LTS supported</span>
+    <span>Boot evidence observed 2026-09-01</span>
+    <span>Revised 2026-11-06</span>
+    <span>&copy; 2026 Laavat Oy | MIT licence | IBM Plex fonts under the SIL Open Font License | Product names are trademarks of their owners.</span>
+  </footer>
+
+</div>

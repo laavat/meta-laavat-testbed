@@ -1,0 +1,18 @@
+# HAB (HABv4) signing of imx-boot via Variscite's own meta-variscite-hab: cst_signer +
+# imx-cst (built from the Debian source tarball — no NXP account) + the public dev PKI tree
+# from github.com/varigit/var-hab-certs (CST_CERTS_URI/CST_SERIAL/CST_KEYPASS defaults in
+# var-hab-certs.bb). Own dev PKI later: point CST_CERTS_URI at a git repo laid out as
+# iMX8M/{crts,keys}. PKCS#11 later: CST's OpenSSL-engine backend (hsm_* scripts in the same
+# tarball) — needs an imx-cst bbappend, not built here.
+# meta-variscite-hab also HAB-signs the *kernel* and bbfatals on fitImage; the FIT signature
+# covers the kernel, so that bbappend is masked (matches "no HAB on the FIT").
+header:
+  version: 14
+  includes:
+    - kas/base.yml
+
+local_conf_header:
+  hab: |
+    OVERRIDES =. "hab:"
+    UBOOT_DTB_DEFAULT = "imx8mm-var-dart-dt8mcustomboard.dtb"
+    BBMASK += "meta-variscite-hab/recipes-kernel/"

@@ -1,0 +1,33 @@
+# The QEMU tier: the same glue as the i.MX tier, on an unrelated machine. Two machines and
+# one glue is the evidence the wiring is not board-specific.
+#
+# TF-A's flash.bin is the machine's QB_DEFAULT_BIOS and carries BL31, BL32=OP-TEE
+# (TFA_SPD=opteed) and BL33=U-Boot (TFA_UBOOT=1), so this is a real secure-boot chain rather
+# than a kernel booted directly; U-Boot then loads and verifies the FIT from /boot.
+# The machine forces QEMU_USE_KVM off, so it runs under TCG and needs no privileges.
+#
+# It takes kas/core.yml, NOT kas/base.yml: no meta-freescale, no meta-imx, no Variscite.
+# Sharing core.yml's local_conf_header verbatim is also what makes the native sstate from the
+# i.MX builds reusable here - DISTRO_FEATURES feeds task hashes, so a config that drifts
+# from it rebuilds rust-llvm and every other native from scratch.
+header:
+  version: 14
+  includes:
+    - kas/core.yml
+
+repos:
+  # The glue for this tier. Split out of sample-variscite-imx8mm, which used to carry both
+  # machines and therefore had to live in core.yml for every tier.
+  sample-qemu-arm64:
+    path: sample-qemu-arm64
+
+# Set here, not inherited: kas resolves scalar keys last-include-wins.
+machine: qemuarm64-secureboot
+target: core-image-minimal
+
+local_conf_header:
+  qemu: |
+    IMAGE_INSTALL:append = " optee-test optee-client"
+    # TAs are packed from, signed back into and installed out of these workdirs; rm_work
+    # would delete them while the stamps still say those tasks are done.
+    RM_WORK_EXCLUDE += "optee-os optee-test"

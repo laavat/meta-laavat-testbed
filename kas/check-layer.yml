@@ -1,0 +1,25 @@
+# A poky-only build, for `yocto-check-layer` to add layers to itself.
+#
+# The tool sets up its own bblayers.conf: it adds the layer under test plus the
+# --dependency layers it is given, then compares signatures with and without. Run inside a
+# normal tier it fails immediately with "duplicated BBFILE_COLLECTIONS", because kas has
+# already put those same layers in bblayers. So this config carries poky and nothing else.
+#
+#   make check-layer
+header:
+  version: 14
+
+build_system: openembedded
+distro: poky
+machine: qemuarm64
+target: core-image-minimal
+
+repos:
+  poky:
+    url: https://github.com/yoctoproject/poky
+    branch: scarthgap
+    commit: 200d12b6a58ad961d60a7774ca0f7a9d29498724
+    path: layers-50/poky
+    layers:
+      meta:
+      meta-poky:

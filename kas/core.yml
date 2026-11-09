@@ -1,0 +1,96 @@
+# The machine-neutral half of the test-bed: layers and settings that carry no BSP.
+# kas/base.yml adds the i.MX/Variscite BSP on top; kas/qemu.yml takes this alone, which is
+# what lets the same glue run on two unrelated machines. Sets no machine on purpose.
+#
+# The local.conf block below is kept whole, including three i.MX-flavoured lines
+# (ACCEPT_FSL_EULA, the variscite packagegroup removal, imx-boot in RM_WORK_EXCLUDE). They
+# are inert on a machine that has none of those recipes, and keeping them here makes the
+# split provably identical to what came before rather than merely equivalent.
+header:
+  version: 14
+
+build_system: openembedded
+distro: poky
+target: core-image-minimal
+
+repos:
+  poky:
+    url: https://github.com/yoctoproject/poky
+    branch: scarthgap
+    commit: 200d12b6a58ad961d60a7774ca0f7a9d29498724
+    path: layers-50/poky
+    layers:
+      meta:
+      meta-poky:
+
+  meta-openembedded:
+    url: https://github.com/openembedded/meta-openembedded
+    branch: scarthgap
+    commit: 72018ca1b1a471226917e8246e8bbf9a374ccf97
+    path: layers-50/meta-openembedded
+    layers:
+      meta-oe:
+      meta-python:
+      meta-networking:
+      meta-multimedia:
+
+  meta-arm:
+    url: https://git.yoctoproject.org/meta-arm
+    branch: scarthgap
+    commit: 950a4afce46a359def2958bd9ae33fc08ff9bb0d
+    path: layers-50/meta-arm
+    layers:
+      meta-arm:
+      meta-arm-toolchain:
+
+  meta-rauc:
+    url: https://github.com/rauc/meta-rauc
+    branch: scarthgap
+    commit: d63878f20eba7a85ecf53566e7a3377e78bb46ac
+    path: layers-50/meta-rauc
+
+  meta-security:
+    url: https://git.yoctoproject.org/meta-security
+    branch: scarthgap
+    commit: 459d837338ca230254baa2994f870bf6eb9d0139
+    path: layers-50/meta-security
+    layers:
+      .:
+      meta-integrity:
+
+  # No sample-* layer here on purpose. Each one is registered by the tier that uses it,
+  # so a bbappend for one BSP is never parsed on another - that is what forced the
+  # BBFILES_DYNAMIC gymnastics this layer used to carry.
+
+  # The test-bed's own fixtures (laavat-sign-smoke, laavat-boot-check). Kept out of the
+  # sample layers so those stay pure integration.
+  testbed-fixtures:
+    path: testbed-fixtures
+
+
+local_conf_header:
+  base: |
+    INIT_MANAGER = "systemd"
+    ACCEPT_FSL_EULA = "1"
+    PACKAGE_CLASSES = "package_ipk"
+
+    # --- minimal: only what core-image-minimal + the signing tests need
+    IMAGE_FSTYPES:remove = "tar.zst wic.zst wic.bmap"
+    IMAGE_FSTYPES:append:pn-core-image-minimal = " ext4"
+    DISTRO_FEATURES:remove = "x11 wayland vulkan opengl ptest bluetooth wifi 3g nfc pulseaudio virtualization"
+    MACHINE_FEATURES:remove = "tpm2"
+    CORE_IMAGE_EXTRA_INSTALL:remove = "packagegroup-tools-bluetooth packagegroup-variscite-devel packagegroup-security-tpm2"
+
+    # --- disk (tuned for ~12 cores / 20 GB RAM / ~47 GB free)
+    INHERIT += "rm_work"
+    RM_WORK_EXCLUDE += "core-image-minimal imx-boot"
+    # Each tier names its own bundle; listing both here keeps one place for it.
+    RM_WORK_EXCLUDE += "sample-variscite-imx8mm-bundle sample-qemu-arm64-bundle"
+    BB_DISKMON_DIRS = "STOPTASKS,${TMPDIR},4G,100K STOPTASKS,${DL_DIR},4G,100K STOPTASKS,${SSTATE_DIR},4G,100K HALT,${TMPDIR},2G,100K HALT,${DL_DIR},2G,100K HALT,${SSTATE_DIR},2G,100K"
+    BB_NUMBER_THREADS = "8"
+    PARALLEL_MAKE = "-j 12"
+
+    # --- quiet layer sanity checks; the feature fragments set the DISTRO_FEATURES they need
+    SKIP_META_SECURITY_SANITY_CHECK = "1"
+    SKIP_META_INTEGRITY_SANITY_CHECK = "1"
+    SKIP_META_RAUC_FEATURE_CHECK = "1"

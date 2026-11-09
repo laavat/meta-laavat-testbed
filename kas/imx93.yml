@@ -1,0 +1,50 @@
+# The NXP i.MX93 EVK tier: the first SoC whose boot ROM is AHAB, not HABv4.
+#
+# This is the signing-scheme axis rather than the vendor axis. i.MX93 replaces HABv4's IVT
+# and CSF with AHAB containers, signed through SPSDK rather than CST, so laavat-hab and
+# everything in laavat.imx_ivt is inapplicable here by construction.
+#
+# What makes it cheap anyway: the service already has the operation. SignSPSDK is a plain
+# file-upload operation, so it wires through meta-laavat's generic laavat-sign class the way
+# INTEGRATION.md section 9 describes - operation name, two ids, input path. Its stored
+# encoding is base64, unlike SignHAB archive mode.
+#
+# Recipe names settled with `bitbake -e` before writing the glue.
+header:
+  version: 14
+  includes:
+    - kas/core.yml
+
+machine: imx93evk
+target: core-image-minimal
+
+repos:
+  meta-freescale:
+    url: https://github.com/Freescale/meta-freescale
+    branch: scarthgap
+    commit: 0627128b341cfb2bef7a0832ce8cac0ce1127f13
+    path: layers-50/meta-freescale
+
+  meta-freescale-distro:
+    url: https://github.com/Freescale/meta-freescale-distro
+    branch: scarthgap
+    commit: b9d6a5d9931922558046d230c1f5f4ef6ee72345
+    path: layers-50/meta-freescale-distro
+
+  meta-imx:
+    url: https://github.com/nxp-imx/meta-imx
+    branch: scarthgap-6.6.52-2.2.0
+    commit: 219f6d04a4c339eb6f2dc626f944bbdf9a716ff5
+    path: layers-50/meta-imx
+    layers:
+      meta-imx-bsp:
+
+  # The glue for this tier, kept separate from sample-variscite-imx8mm so neither can quietly
+  # lean on the other. Written from meta-laavat/docs/INTEGRATION.md.
+  sample-nxp-imx93:
+    path: sample-nxp-imx93
+
+local_conf_header:
+  evk: |
+    # meta-freescale's imx-boot needs this; the Variscite tier gets it from core.yml too.
+    ACCEPT_FSL_EULA = "1"

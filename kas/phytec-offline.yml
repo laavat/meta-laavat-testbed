@@ -1,0 +1,31 @@
+# The Phytec tier's offline subset: everything that does not talk to the service.
+#
+# do_laavat_pack (HAB) and do_laavat_pack (RAUC) build their payloads locally, so they
+# exercise the board-specific half of the integration - IVT parsing on this BSP's boot
+# image, and the resign archive - with no credentials and no network.
+#
+# OP-TEE and FIT are both off here, for the same reason: each embeds a *verification* key
+# fetched from the service, so neither has an offline half at all. For FIT that is not just
+# the fetch - laavat-fitkey-uboot asserts at the end of do_uboot_assemble_fitimage that the
+# key in the control device tree is the service's, and with the kernel half never run there
+# is nothing for it to assert.
+#
+# Useful in CI, and useful when validating a new BSP before anyone has provisioned a product:
+#
+#     ./kas-container shell kas/phytec-offline.yml -c 'bitbake imx-boot-phytec -c laavat_request'
+header:
+  version: 14
+  includes:
+    - kas/phytec-live.yml
+
+local_conf_header:
+  # Sorts after "laavat-live", so it wins.
+  zz-offline: |
+    LAAVAT_OPTEE_SIGN = "0"
+    LAAVAT_FIT_SIGN = "0"
+    # With laavat's FIT half off, poky's own FIT machinery is dead weight here - and it is
+    # not free: UBOOT_SIGN_ENABLE makes u-boot depend on the kernel's assembled fitImage, so
+    # leaving it on drags a full kernel fetch and build into a subset whose whole point is
+    # to be the cheap check. imx-boot itself depends on u-boot, ATF and OP-TEE, never the
+    # kernel.
+    UBOOT_SIGN_ENABLE = "0"

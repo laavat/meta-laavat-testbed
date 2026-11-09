@@ -1,0 +1,21 @@
+# meta-laavat under test: run `make fetch-laavat` first, then use this as KAS_CFG.
+header:
+  version: 14
+  includes:
+    - kas/base.yml
+
+repos:
+  # Installed by `make fetch-laavat` - github.com/laavat/meta-laavat at the Makefile's
+  # LAAVAT_REF, or a local checkout with LAAVAT_SRC - so every tier, on every Yocto
+  # release, shares one copy at one path.
+  meta-laavat:
+    path: layers-50/meta-laavat
+
+local_conf_header:
+  laavat: |
+  laavat-smoke: |
+    # laavat-sign-smoke signs against scripts/laavat-stub.py, started inside the
+    # container on the same loopback: see README "Hermetic signing smoke".
+    LAAVAT_API_URL = "http://127.0.0.1:8943/api/v1"
+    LAAVAT_PRODUCT_ID = "prod-uuid"
+    LAAVAT_OPER_ID = "oper-uuid"

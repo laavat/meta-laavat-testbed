@@ -1,0 +1,15 @@
+# Everything: FIT-signed kernel(+verity initramfs), HAB-signed imx-boot, signed modules,
+# signed verity-format RAUC bundle carrying the dm-verity rootfs.
+header:
+  version: 14
+  includes:
+    - kas/base.yml
+    - kas/fit.yml
+    - kas/hab.yml
+    - kas/modsign.yml
+    - kas/rauc.yml
+    - kas/verity.yml
+
+target:
+  - core-image-minimal
+  - sample-variscite-imx8mm-bundle

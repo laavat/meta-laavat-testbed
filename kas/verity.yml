@@ -1,0 +1,23 @@
+# dm-verity rootfs via meta-security dm-verity-img: core-image-minimal.ext4.verity (hash tree
+# appended), root hash written to a .env that meta-security's dm-verity-image-initramfs embeds;
+# the initramfs is bundled into the kernel so the root hash sits inside the kernel image.
+# RAUC bundle carries the .verity image when both fragments are enabled.
+#
+# The bundle is for the DEV-KEY tiers only. With service signing on, poky deploys the bundled
+# FIT it signed itself with laavat-fitkey's placeholder key rather than the one the service
+# signed, so laavat-fitkey refuses INITRAMFS_IMAGE_BUNDLE outright; kas/laavat-live.yml turns
+# it off and the initramfs rides inside the signed FIT as a ramdisk node instead.
+header:
+  version: 14
+  includes:
+    - kas/base.yml
+
+local_conf_header:
+  verity: |
+    DISTRO_FEATURES:append = " security"
+    IMAGE_CLASSES += "dm-verity-img"
+    DM_VERITY_IMAGE = "core-image-minimal"
+    DM_VERITY_IMAGE_TYPE = "ext4"
+    INITRAMFS_IMAGE = "dm-verity-image-initramfs"
+    INITRAMFS_IMAGE_BUNDLE = "1"
+    RAUC_IMAGE_FSTYPE = "ext4.verity"

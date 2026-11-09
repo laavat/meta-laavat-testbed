@@ -1,0 +1,65 @@
+# The NXP i.MX6 SABRE-SD tier signed by a real LAAVAT service: FIT + RAUC + HAB.
+#
+# No OP-TEE here: this machine's MACHINE_FEATURES does not carry optee, and adding it
+# changes UBOOT_CONFIG to "sd sd-optee", which builds two u-boot.imx in two directories.
+# That is a real case worth testing one day, but it is not this tier's job.
+header:
+  version: 14
+  includes:
+    - kas/imx6.yml
+
+repos:
+  meta-laavat:
+    path: layers-50/meta-laavat
+
+machine: imx6qdlsabresd
+target:
+  - core-image-minimal
+  - sample-nxp-imx6-bundle
+
+local_conf_header:
+  imx6-features: |
+    # FIT: laavat-fitkey checks both of these at parse time (INTEGRATION.md section 6).
+    KERNEL_CLASSES:append = " kernel-fitimage"
+    KERNEL_IMAGETYPE = "fitImage"
+    UBOOT_SIGN_ENABLE = "1"
+    UBOOT_SIGN_KEYDIR = "${TOPDIR}/keys/fit-imx6"
+    UBOOT_SIGN_KEYNAME = "laavat"
+    FIT_GENERATE_KEYS = "1"
+    FIT_SIGN_ALG = "rsa2048"
+    FIT_HASH_ALG = "sha256"
+    FIT_SIGN_INDIVIDUAL = "0"
+    UBOOT_MKIMAGE_DTCOPTS = "-I dts -O dtb -p 2000"
+
+    # RAUC
+    DISTRO_FEATURES:append = " rauc"
+    IMAGE_INSTALL:append:pn-core-image-minimal = " rauc"
+    RAUC_IMAGE_FSTYPE ?= "ext4"
+
+    # The signed fitImage is read from and written into the kernel workdir, and the u-boot
+    # recipe both injects the FIT key and holds the HAB artifact, so neither may be wiped.
+    RM_WORK_EXCLUDE += "linux-imx u-boot-imx"
+
+  # Sorts after every "imx6*" key so the service wiring lands last.
+  laavat-live: |
+    LAAVAT_FIT_SIGN = "1"
+    LAAVAT_RAUC_SIGN = "1"
+    LAAVAT_HAB_ARCHIVE = "1"
+
+    # --- service (EXAMPLE values: replace with your own service) ---
+    LAAVAT_API_URL = "https://signing.example.com/api/v1"
+    LAAVAT_TOKEN_FILE = "/build/laavat/token-writer.jwt"
+    LAAVAT_APPROVER_TOKEN_FILE = "/build/laavat/token-approver.jwt"
+    export REQUESTS_CA_BUNDLE = "/build/laavat/combined_ca.crt"
+
+    # --- one product + operation per recipe (EXAMPLE: your own ids) ---
+    # HAB lands on the u-boot recipe here, not on imx-boot: this machine has no imx-boot.
+    LAAVAT_PRODUCT_ID:pn-u-boot-imx = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-u-boot-imx = "<operation-uuid>"
+
+    LAAVAT_PRODUCT_ID:pn-linux-imx = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-linux-imx = "<operation-uuid>"
+    LAAVAT_FIT_PUBKEY_SHA256 = "<sha256-of-the-public-key-DER>"
+
+    LAAVAT_PRODUCT_ID:pn-sample-nxp-imx6-bundle = "<product-uuid>"
+    LAAVAT_OPER_ID:pn-sample-nxp-imx6-bundle = "<operation-uuid>"

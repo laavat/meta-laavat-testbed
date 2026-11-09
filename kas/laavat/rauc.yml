@@ -1,0 +1,11 @@
+# LAAVAT re-signs the finished .raucb that `rauc bundle` signed with rauc.yml's dev key.
+# Needs `make fetch-laavat` and a reachable service — see README "RAUC bundle".
+header:
+  version: 14
+  includes:
+    - kas/laavat/common.yml
+    - kas/rauc.yml
+
+local_conf_header:
+  laavat-rauc: |
+    LAAVAT_RAUC_SIGN = "1"
